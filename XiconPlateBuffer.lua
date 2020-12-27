@@ -10,7 +10,7 @@ local COMBATLOG_OBJECT_REACTION_NEUTRAL = COMBATLOG_OBJECT_REACTION_NEUTRAL
 
 local trackedCC = initTrackedCrowdControl()
 
-local trackedNames = {}
+local trackedUnitNames = {}
 
 local print = function(s)
     local str = s
@@ -35,7 +35,7 @@ local plateFrame = CreateFrame("Frame")
 
 ---------------------------------------------------------------------------------------------
 
--- TABLE FUNCTIONS
+-- TABLE & MATH FUNCTIONS
 
 ---------------------------------------------------------------------------------------------
 
@@ -59,6 +59,14 @@ local getname = function(f)
     return name
 end
 
+local function formatTimer(num, numDecimalPlaces)
+    return string.format("%." .. (numDecimalPlaces or 0) .. "f", num)
+end
+
+local function round(num, numDecimalPlaces)
+    return tonumber(formatTimer(num, numDecimalPlaces))
+end
+
 ---------------------------------------------------------------------------------------------
 
 -- DEBUFF FUNCTIONS
@@ -66,8 +74,8 @@ end
 ---------------------------------------------------------------------------------------------
 
 local function addDebuff(destName, destGUID, spellID, spellName)
-    if trackedNames[destName] == nil then
-        trackedNames[destName] = {}
+    if trackedUnitNames[destName] == nil then
+        trackedUnitNames[destName] = {}
     end
     local _, _, texture = GetSpellInfo(spellID)
     local duration = trackedCC[spellName].duration
@@ -84,67 +92,72 @@ local function addDebuff(destName, destGUID, spellID, spellName)
     icon.endtime = GetTime() + duration
     icon.name = spellName
 
-    local icontimer = function(icon)
+    local iconTimer = function(iconFrame)
         --if not Icicledb.fontSize then Icicledb.fontSize = ceil(Icicledb.iconsizer - Icicledb.iconsizer  / 2) end
-        local itimer = ceil(icon.endtime - GetTime()) -- cooldown duration
+        local itimer = ceil(iconFrame.endtime - GetTime()) -- cooldown duration
+        local milliTimer = round(iconFrame.endtime - GetTime(), 1)
         if itimer >= 60 then
-            icon.cooldown:SetText(itimer)
+            iconFrame.cooldown:SetText(itimer)
             if itimer < 60 and itimer >= 90 then
-                icon.cooldown:SetText("2m")
+                iconFrame.cooldown:SetText("2m")
             else
-                icon.cooldown:SetText(ceil(itimer / 60) .. "m") -- X minutes
+                iconFrame.cooldown:SetText(ceil(itimer / 60) .. "m") -- X minutes
             end
         elseif itimer < 60 and itimer >= 11 then
             --if it's less than 60s
-            icon.cooldown:SetText(itimer)
-        elseif itimer <= 10 and itimer >= 4 then
-            icon.cooldown:SetTextColor(1, 0.7, 0)
-            icon.cooldown:SetText(itimer)
-        elseif itimer <= 3 and itimer >= 1 then
-            icon.cooldown:SetTextColor(1, 0, 0)
-            icon.cooldown:SetText(itimer)
-        elseif itimer <= 0 then
-            icon:Hide()
-            icon:SetParent(nil)
-        else
-            icon.cooldown:SetText(" ")
-            icon:SetScript("OnUpdate", nil)
+            iconFrame.cooldown:SetText(itimer)
+        elseif itimer <= 10 and itimer >= 5 then
+            iconFrame.cooldown:SetTextColor(1, 0.7, 0)
+            iconFrame.cooldown:SetText(itimer)
+        elseif itimer <= 4 and itimer >= 3 then
+            iconFrame.cooldown:SetTextColor(1, 0, 0)
+            iconFrame.cooldown:SetText(itimer)
+        elseif milliTimer <= 3 and milliTimer > 0 then
+            iconFrame.cooldown:SetTextColor(1, 0, 0)
+            iconFrame.cooldown:SetText(formatTimer(milliTimer, 1))
+        else -- fallback in case SPELL_AURA_REMOVED is not fired for some reason
+            iconFrame.cooldown:SetText(" ")
+            iconFrame:SetScript("OnUpdate", nil)
+            iconFrame:Hide()
+            iconFrame:SetParent(nil)
         end
     end
 
-    for i = 1, #trackedNames[destName] do
-        if trackedNames[destName][i] then
-            if trackedNames[destName][i].name == spellName then
-                if trackedNames[destName][i]:IsVisible() then
-                    local f = trackedNames[destName][i]:GetParent()
-                    if f.xiconplate then
-                        f.xiconplate = 0
+    --reset debuffFrame currently present with same spellName
+    for i = 1, #trackedUnitNames[destName] do
+        if trackedUnitNames[destName][i] then
+            if trackedUnitNames[destName][i].name == spellName then
+                if trackedUnitNames[destName][i]:IsVisible() then
+                    local parent = trackedUnitNames[destName][i]:GetParent()
+                    if parent.xiconPlate then
+                        parent.xiconPlate = 0
                     end
                 end
-                trackedNames[destName][i]:Hide()
-                trackedNames[destName][i]:SetParent(nil)
-                tremove(trackedNames[destName], i)
+                trackedUnitNames[destName][i]:Hide()
+                trackedUnitNames[destName][i]:SetParent(nil)
+                tremove(trackedUnitNames[destName], i)
                 --count = count - 1
             end
         end
     end
 
-    tinsert(trackedNames[destName], icon)
+    tinsert(trackedUnitNames[destName], icon)
     icon:SetScript("OnUpdate", function()
-        icontimer(icon)
+        iconTimer(icon)
     end)
 end
 
 local function removeDebuff(destName, destGUID, spellID, spellName)
-    if trackedNames[destName] == nil then
+    if trackedUnitNames[destName] == nil then
         return
     end
-    for i = 1, #trackedNames[destName] do
-        if trackedNames[destName][i] then
-            if trackedNames[destName][i].name == spellName then
-                trackedNames[destName][i]:Hide()
-                trackedNames[destName][i]:SetParent(nil)
-                tremove(trackedNames[destName], i)
+    for i = 1, #trackedUnitNames[destName] do
+        if trackedUnitNames[destName][i] then
+            if trackedUnitNames[destName][i].name == spellName then
+                trackedUnitNames[destName][i]:Hide()
+                trackedUnitNames[destName][i]:SetParent(nil)
+                trackedUnitNames[destName][i]:SetScript("OnUpdate", nil)
+                tremove(trackedUnitNames[destName], i)
                 break
                 --count = count - 1
             end
@@ -152,39 +165,38 @@ local function removeDebuff(destName, destGUID, spellID, spellName)
     end
 end
 
-local width
-local function addicons(name, f, spellID)
+local function addIcons(dstName, namePlate)
     --name returns ___, f returns table value
-    local num = #trackedNames[name] --number = db number
-    local size
+    local num = #trackedUnitNames[dstName] --number = db number
+    local size, width
     if not width then
-        width = f:GetWidth()
+        width = namePlate:GetWidth()
     end
     if num * 20 + (num * 2 - 2) > width then
         size = (width - (num * 2 - 2)) / num
     else
         size = 50
     end
-    for i = 1, #trackedNames[name] do
-        trackedNames[name][i]:ClearAllPoints()
-        trackedNames[name][i]:SetWidth(size)
-        trackedNames[name][i]:SetHeight(size)
-        trackedNames[name][i].cooldown:SetFont("Fonts\\ARIALN.ttf", 10, "OUTLINE") --
+    for i = 1, #trackedUnitNames[dstName] do
+        trackedUnitNames[dstName][i]:ClearAllPoints()
+        trackedUnitNames[dstName][i]:SetWidth(size)
+        trackedUnitNames[dstName][i]:SetHeight(size)
+        trackedUnitNames[dstName][i].cooldown:SetFont("Fonts\\ARIALN.ttf", 10, "OUTLINE") --
         if i == 1 then
-            trackedNames[name][i]:SetPoint("TOPLEFT", f, 31, size + -4)
+            trackedUnitNames[dstName][i]:SetPoint("TOPLEFT", namePlate, 31, size + -4)
         else
-            trackedNames[name][i]:SetPoint("TOPLEFT", trackedNames[name][i - 1], size + 2, 0)
+            trackedUnitNames[dstName][i]:SetPoint("TOPLEFT", trackedUnitNames[dstName][i - 1], size + 2, 0)
         end
     end
 end
 
-local function hideicons(name, f)
-    f.xiconplate = 0
-    for i = 1, #trackedNames[name] do
-        trackedNames[name][i]:Hide()
-        trackedNames[name][i]:SetParent(nil)
+local function hideIcons(dstName, namePlate)
+    namePlate.xiconPlate = 0
+    for i = 1, #trackedUnitNames[dstName] do
+        trackedUnitNames[dstName][i]:Hide()
+        trackedUnitNames[dstName][i]:SetParent(nil)
     end
-    f:SetScript("OnHide", nil)
+    namePlate:SetScript("OnHide", nil)
 end
 
 ---------------------------------------------------------------------------------------------
@@ -270,31 +282,31 @@ end
 
 ---------------------------------------------------------------------------------------------
 
-local updateInterval, lastUpdate, dateUpdate = 0.02,0
+local updateInterval, lastUpdate = .02, 0
 plateBuffer:SetScript("OnUpdate", function(_, elapsed)
     lastUpdate = lastUpdate + elapsed
     if lastUpdate > updateInterval then
         -- do stuff
         local num = WorldFrame:GetNumChildren()
         for i = 1, num do
-            local f = select(i, WorldFrame:GetChildren())
-            if not f.xiconplate then
-                f.xiconplate = 0
+            local namePlate = select(i, WorldFrame:GetChildren())
+            if not namePlate.xiconPlate then
+                namePlate.xiconPlate = 0
             end
-            if f:GetNumRegions() > 2 and f:GetNumChildren() >= 1 then
-                if f:IsVisible() then
-                    local name = getname(f)
-                    if trackedNames[name] ~= nil then
-                        if f.xiconplate ~= #trackedNames[name] then
-                            f.xiconplate = #trackedNames[name]
-                            print("f.xiconplate = " .. f.xiconplate .. " - #trackedNames[name] = " .. #trackedNames[name] .. " - name = " .. name)
-                            for j = 1, #trackedNames[name] do
-                                trackedNames[name][j]:SetParent(f)
-                                trackedNames[name][j]:Show()
+            if namePlate:GetNumRegions() > 2 and namePlate:GetNumChildren() >= 1 then
+                if namePlate:IsVisible() then
+                    local name = getname(namePlate)
+                    if trackedUnitNames[name] ~= nil then
+                        if namePlate.xiconPlate ~= #trackedUnitNames[name] then
+                            namePlate.xiconPlate = #trackedUnitNames[name]
+                            print("f.xiconplate = " .. namePlate.xiconPlate .. " - #trackedNames[name] = " .. #trackedUnitNames[name] .. " - name = " .. name)
+                            for j = 1, #trackedUnitNames[name] do
+                                trackedUnitNames[name][j]:SetParent(namePlate)
+                                trackedUnitNames[name][j]:Show()
                             end
-                            addicons(name, f)
-                            f:SetScript("OnHide", function()
-                                hideicons(name, f)
+                            addIcons(name, namePlate)
+                            namePlate:SetScript("OnHide", function()
+                                hideIcons(name, namePlate)
                             end)
                         end
                     end
