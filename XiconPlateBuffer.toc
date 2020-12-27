@@ -1,0 +1,9 @@
+## Interface: 20400
+## Title: |cffa0f6aaXiconPlateBuffer|r
+## Notes: Plate Debuffs/Buffs for TBC 2.4.3
+## Author: XiconKyle
+## Version: 1.0
+## SavedVariablesPerCharacter: XiconPlateBufferDB
+
+constants.lua
+XiconPlateBuffer.lua
