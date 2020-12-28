@@ -31,8 +31,6 @@ xiconPlateBuffer:SetWidth(1)
 xiconPlateBuffer:SetHeight(1)
 xiconPlateBuffer:SetAlpha(0)
 
-local plateFrame = CreateFrame("Frame")
-
 ---------------------------------------------------------------------------------------------
 
 -- TABLE & MATH FUNCTIONS
@@ -45,13 +43,13 @@ function table.removekey(table, key)
     return element
 end
 
-local getname = function(f)
+local function getName(namePlate)
     local name
-    local _, _, _, _, eman, lvl, eman2 = f:GetRegions()
-    if f.aloftData then
-        name = f.aloftData.name
+    local _, _, _, _, eman, lvl, eman2 = namePlate:GetRegions()
+    if namePlate.aloftData then
+        name = namePlate.aloftData.name
     elseif strmatch(eman:GetText(), "%d") then
-        local _, _, _, _, _, eman = f:GetRegions()
+        local _, _, _, _, _, eman = namePlate:GetRegions()
         name = eman:GetText()
     else
         name = eman:GetText()
@@ -68,12 +66,12 @@ local function round(num, numDecimalPlaces)
     return tonumber(formatTimer(num, numDecimalPlaces))
 end
 
-local function split(s, sep)
+local function split(str, separator)
     local fields = {}
 
-    local sep = sep or " "
+    local sep = separator or " "
     local pattern = string.format("([^%s]+)", sep)
-    string.gsub(s, pattern, function(c) fields[#fields + 1] = c end)
+    string.gsub(str, pattern, function(c) fields[#fields + 1] = c end)
 
     return fields
 end
@@ -102,6 +100,28 @@ end
 ---------------------------------------------------------------------------------------------
 
 local function calcEndTime(timeLeft) return GetTime() + timeLeft end
+
+local function removeDebuff(destName, destGUID, spellID, spellName)
+    if trackedUnitNames[destName..destGUID] ~= nil then
+        for i = 1, #trackedUnitNames[destName..destGUID] do
+            if trackedUnitNames[destName..destGUID][i] then
+                if trackedUnitNames[destName..destGUID][i].name == spellName then
+                    if trackedUnitNames[destName..destGUID][i]:IsVisible() then
+                        local parent = trackedUnitNames[destName..destGUID][i]:GetParent()
+                        if parent and parent.xiconPlate then
+                            parent.xiconPlate = 0
+                        end
+                    end
+                    trackedUnitNames[destName..destGUID][i]:SetParent(nil)
+                    trackedUnitNames[destName..destGUID][i]:Hide()
+                    trackedUnitNames[destName..destGUID][i]:SetScript("OnUpdate", nil)
+                    tremove(trackedUnitNames[destName..destGUID], i)
+                    --count = count - 1
+                end
+            end
+        end
+    end
+end
 
 local function addDebuff(destName, destGUID, spellID, spellName)
     if trackedUnitNames[destName..destGUID] == nil then
@@ -148,59 +168,22 @@ local function addDebuff(destName, destGUID, spellID, spellName)
         elseif milliTimer <= 3 and milliTimer > 0 then
             iconFrame.cooldown:SetTextColor(1, 0, 0)
             iconFrame.cooldown:SetText(formatTimer(milliTimer, 1))
-        else -- fallback in case SPELL_AURA_REMOVED is not fired for some reason
-            iconFrame.cooldown:SetText(" ")
-            iconFrame:SetScript("OnUpdate", nil)
-            iconFrame:SetParent(nil)
-            iconFrame:Hide()
+        else -- fallback in case SPELL_AURA_REMOVED is not fired
+            removeDebuff(destName, destGUID, spellID, spellName)
         end
     end
 
-    --reset debuffFrame currently present with same spellName
-    for i = 1, #trackedUnitNames[destName..destGUID] do
-        if trackedUnitNames[destName..destGUID][i] then
-            if trackedUnitNames[destName..destGUID][i].name == spellName then
-                if trackedUnitNames[destName..destGUID][i]:IsVisible() then
-                    local parent = trackedUnitNames[destName..destGUID][i]:GetParent()
-                    if parent.xiconPlate then
-                        parent.xiconPlate = 0
-                    end
-                end
-                trackedUnitNames[destName..destGUID][i]:SetParent(nil)
-                trackedUnitNames[destName..destGUID][i]:Hide()
-                tremove(trackedUnitNames[destName..destGUID], i)
-                --count = count - 1
-            end
-        end
-    end
-
+    removeDebuff(destName, destGUID, spellID, spellName)
     tinsert(trackedUnitNames[destName..destGUID], icon)
     icon:SetScript("OnUpdate", function()
         iconTimer(icon)
     end)
 end
 
-local function removeDebuff(destName, destGUID, spellID, spellName)
-    if trackedUnitNames[destName..destGUID] == nil then
-        return
-    end
-    for i = 1, #trackedUnitNames[destName..destGUID] do
-        if trackedUnitNames[destName..destGUID][i] then
-            if trackedUnitNames[destName..destGUID][i].name == spellName then
-                trackedUnitNames[destName..destGUID][i]:SetParent(nil)
-                trackedUnitNames[destName..destGUID][i]:Hide()
-                trackedUnitNames[destName..destGUID][i]:SetScript("OnUpdate", nil)
-                tremove(trackedUnitNames[destName..destGUID], i)
-                break
-                --count = count - 1
-            end
-        end
-    end
-end
 
 local function addIcons(dstName, namePlate)
-    --name returns ___, f returns table value
-    local num = #trackedUnitNames[dstName] --number = db number
+    --TODO configurable
+    local num = #trackedUnitNames[dstName]
     local size, width
     if not width then
         width = namePlate:GetWidth()
@@ -239,12 +222,10 @@ local function updateIconsOnUnit(unit)
     if IsValidTarget(unit) then
         local destName = string.gsub(UnitName(unit), "%s+", "") .. UnitGUID(unit)
         if trackedUnitNames[destName] ~= nil then
-            local unitDebuffs = {}
             for i = 1, 40 do
-                local debuffName, rank, icon, count, dtype, duration, timeLeft, isMine = UnitDebuff(unit, i)
+                local debuffName,rank,icon,count,dtype,duration,timeLeft,isMine = UnitDebuff(unit, i)
                 if not debuffName then break end
                 if trackedCC[debuffName] then
-                    unitDebuffs[debuffName] = timeLeft
                     --update buff durations
                     for j = 1, #trackedUnitNames[destName] do
                         if trackedUnitNames[destName][j] and trackedUnitNames[destName][j].name == debuffName and timeLeft ~= nil then
@@ -342,48 +323,19 @@ end
 function events:COMBAT_LOG_EVENT_UNFILTERED(...)
     local _, eventType, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellID, spellName, spellSchool, auraType, stackCount = select(1, ...)
     local isEnemy = bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) == COMBATLOG_OBJECT_REACTION_NEUTRAL or bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE
-    local playerGUID,name = UnitGUID("player")
-    if playerGUID == srcGUID then
-        --print(eventType .. " - " .. spellName)
-    end
-    if trackedCC[spellName] then
-        --print(eventType .. " - " .. spellName)
-    end
-    if isEnemy then
-        name = string.gsub(dstName, "%s+", "")
-    end
-    if isEnemy and (eventType == "SPELL_AURA_APPLIED" or eventType == "SPELL_AURA_REFRESH") and trackedCC[spellName] then
-        print(eventType .. " - " .. spellName .. " - addDebuff")
-        addDebuff(name, dstGUID, spellID, spellName)
-        updateIconsOnUnitGUID(dstGUID)
-    end
-    if isEnemy and (eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL") and trackedCC[spellName] then
-        print(eventType .. " - " .. spellName .. " - " .. dstName .. " - removeDebuff")
-        removeDebuff(name, dstGUID, spellID, spellName)
-    end
-    if isEnemy and eventType == "UNIT_DIED" then
-        --[[for k,v in pairs(trackedUnitNames) do
-
-        end--]]
-        trackedUnitNames[dstName..dstGUID] = nil
-    end
-    --[[if isEnemy and playerGUID == srcGUID and trackedCC[spellName] then
-        if eventType == "SPELL_CAST_SUCCESS" and spellSchool == 1 then -- melee hits only
-            print(eventType .. " - " .. spellName)
-        elseif eventType == "SPELL_AURA_APPLIED" then
-            print(eventType .. " - " .. spellName)
-        elseif eventType == "SPELL_AURA_REFRESH" then
-            print(eventType .. " - " .. spellName)
-        elseif eventType == "SPELL_MISSED" then
-            print(eventType .. " - " .. spellName)
-        elseif eventType == "SPELL_AURA_BROKEN_SPELL" then
-            print(eventType .. " - " .. spellName)
-        elseif eventType == "SPELL_AURA_BROKEN" then
-            print(eventType .. " - " .. spellName)
-        elseif eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL" then
-            print(eventType .. " - " .. spellName)
+    if isEnemy and trackedCC[spellName] then
+        local name = string.gsub(dstName, "%s+", "")
+        if (eventType == "SPELL_AURA_APPLIED" or eventType == "SPELL_AURA_REFRESH") then
+            --print(eventType .. " - " .. spellName .. " - addDebuff")
+            addDebuff(name, dstGUID, spellID, spellName)
+            updateIconsOnUnitGUID(dstGUID)
+        elseif (eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL") then
+            --print(eventType .. " - " .. spellName .. " - " .. dstName .. " - removeDebuff")
+            removeDebuff(name, dstGUID, spellID, spellName)
+        elseif eventType == "UNIT_DIED" then
+            trackedUnitNames[dstName..dstGUID] = nil
         end
-    end--_AURA_BROKEN_SPELL _AURA_BROKEN--]]
+    end
 end
 
 function events:PLAYER_FOCUS_CHANGED()
@@ -396,6 +348,17 @@ end
 
 function events:UPDATE_MOUSEOVER_UNIT()
     updateIconsOnUnit("mouseover")
+end
+
+function events:PLAYER_ENTERING_WORLD(...)
+    local instance = select(2, IsInInstance())
+    trackedUnitNames = {}
+    --[[if (instance == "arena") then
+        self:JoinedArena()
+    elseif (instance ~= "arena" and self.lastInstance == "arena") then
+        self:HideFrame()
+    end
+    self.lastInstance = instance--]]
 end
 
 function events:PLAYER_LOGOUT(...)
@@ -438,26 +401,28 @@ xiconPlateBuffer:SetScript("OnUpdate", function(_, elapsed)
     lastUpdate = lastUpdate + elapsed
     if lastUpdate > updateInterval then
         -- do stuff
-        local num = WorldFrame:GetNumChildren()
-        for i = 1, num do
-            local namePlate = select(i, WorldFrame:GetChildren())
-            if namePlate:GetNumRegions() > 2 and namePlate:GetNumChildren() >= 1 then
-                if namePlate:IsVisible() then
-                    if not namePlate.xiconPlate then
-                        namePlate.xiconPlate = 0
-                    end
-                    local name = getname(namePlate)
+        if NAMEPLATES_ON then
+            local num = WorldFrame:GetNumChildren()
+            for i = 1, num do
+                local namePlate = select(i, WorldFrame:GetChildren())
+                if namePlate:GetNumRegions() > 2 and namePlate:GetNumChildren() >= 1 then
+                    if namePlate:IsVisible() then
+                        if not namePlate.xiconPlate then
+                            namePlate.xiconPlate = 0
+                        end
+                        local name = getName(namePlate)
 
-                    -- check if namePlate is target or mouseover
-                    local border, castborder, casticon, highlight, nameText, levelText, levelIcon, raidIcon = namePlate:GetRegions()
-                    local target = UnitExists("target") and namePlate:GetAlpha() == 1 or nil
-                    local mouseover = UnitExists("mouseover") and highlight:IsShown() or nil
-                    if target then
-                        updateNameplate("target", namePlate, name)
-                    elseif mouseover then
-                        updateNameplate("mouseover", namePlate, name)
-                    else
-                        assignDebuffs(name, namePlate, false)
+                        -- check if namePlate is target or mouseover
+                        local border, castborder, casticon, highlight, nameText, levelText, levelIcon, raidIcon = namePlate:GetRegions()
+                        local target = UnitExists("target") and namePlate:GetAlpha() == 1 or nil
+                        local mouseover = UnitExists("mouseover") and highlight:IsShown() or nil
+                        if target then
+                            updateNameplate("target", namePlate, name)
+                        elseif mouseover then
+                            updateNameplate("mouseover", namePlate, name)
+                        else
+                            assignDebuffs(name, namePlate, false)
+                        end
                     end
                 end
             end
