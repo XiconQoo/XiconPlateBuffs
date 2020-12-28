@@ -1,7 +1,7 @@
 local debug = false
-local ADDON_NAME = "XiconPlateBuffer"
+local ADDON_NAME = "XiconPlateBuffs"
 local select, tonumber, tostring = select, tonumber, tostring
-local XiconPlateBufferDB_local
+local XiconPlateBuffsDB_local
 
 local COMBATLOG_OBJECT_TYPE_PLAYER = COMBATLOG_OBJECT_TYPE_PLAYER
 local COMBATLOG_OBJECT_REACTION_HOSTILE = COMBATLOG_OBJECT_REACTION_HOSTILE
@@ -15,7 +15,7 @@ local trackedUnitNames = {}
 local print = function(s)
     local str = s
     if s == nil then str = "" end
-    DEFAULT_CHAT_FRAME:AddMessage("|cffa0f6aa".. ADDON_NAME .."|r: " .. str)
+    DEFAULT_CHAT_FRAME:AddMessage("|cffa0f6aa[".. ADDON_NAME .."]|r: " .. str)
 end
 
 ---------------------------------------------------------------------------------------------
@@ -25,11 +25,11 @@ end
 ---------------------------------------------------------------------------------------------
 
 -- create core
-local xiconPlateBuffer = CreateFrame("Frame", "xiconPlateBuffer", UIParent)
-xiconPlateBuffer:EnableMouse(false)
-xiconPlateBuffer:SetWidth(1)
-xiconPlateBuffer:SetHeight(1)
-xiconPlateBuffer:SetAlpha(0)
+local xiconPlateBuffs = CreateFrame("Frame", "XiconPlateBuffs", UIParent)
+xiconPlateBuffs:EnableMouse(false)
+xiconPlateBuffs:SetWidth(1)
+xiconPlateBuffs:SetHeight(1)
+xiconPlateBuffs:SetAlpha(0)
 
 ---------------------------------------------------------------------------------------------
 
@@ -309,14 +309,14 @@ local events = {} -- store event functions to be assigned to reputation frame
 function events:ADDON_LOADED(...)
     if select(1, ...) == ADDON_NAME then
         print("LOADED - \"/xtc\" toggles the display frame. \"/xtc enable/disable\" enables or disables the addon")
-        XiconPlateBufferDB_local = XiconPlateBufferDB
-        if not XiconPlateBufferDB_local then
-            XiconPlateBufferDB_local = {}
-            XiconPlateBufferDB = XiconPlateBufferDB_local
+        XiconPlateBuffsDB_local = XiconPlateBuffsDB
+        if not XiconPlateBuffsDB_local then
+            XiconPlateBuffsDB_local = {}
+            XiconPlateBuffsDB = XiconPlateBuffsDB_local
         end
 
         local date = date("%m/%d/%y")
-        xiconPlateBuffer:UnregisterEvent("ADDON_LOADED")
+        xiconPlateBuffs:UnregisterEvent("ADDON_LOADED")
     end
 end
 
@@ -362,7 +362,7 @@ function events:PLAYER_ENTERING_WORLD(...)
 end
 
 function events:PLAYER_LOGOUT(...)
-    XiconPlateBufferDB = XiconPlateBufferDB_local
+    XiconPlateBuffsDB = XiconPlateBuffsDB_local
 end
 
 
@@ -372,11 +372,11 @@ end
 
 ---------------------------------------------------------------------------------------------
 
-xiconPlateBuffer:SetScript("OnEvent", function(self, event, ...)
+xiconPlateBuffs:SetScript("OnEvent", function(self, event, ...)
     events[event](self, ...); -- call one of the functions above
 end);
 for k, _ in pairs(events) do
-    xiconPlateBuffer:RegisterEvent(k); -- Register all events for which handlers have been defined
+    xiconPlateBuffs:RegisterEvent(k); -- Register all events for which handlers have been defined
 end
 
 ---------------------------------------------------------------------------------------------
@@ -397,7 +397,7 @@ local function updateNameplate(unit, plate, unitName)
 end
 
 local updateInterval, lastUpdate = .02, 0
-xiconPlateBuffer:SetScript("OnUpdate", function(_, elapsed)
+xiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
     lastUpdate = lastUpdate + elapsed
     if lastUpdate > updateInterval then
         -- do stuff
@@ -438,20 +438,20 @@ end)
 
 ---------------------------------------------------------------------------------------------
 
-SLASH_XICONPLATEBUFFER1 = "/xpb";
+SLASH_XICONPLATEBUFFS1 = "/xpb";
 
 local enable, disable, trinket1, trinket2= "enable", "disable", "1", "2"
 
-local function XICONPLATEBUFFERfunc(msg)
+local function XICONPLATEBUFFSfunc(msg)
     if msg == "" then
 
     else
         local _, _, cmd, args = string.find(msg, "%s?(%w+)%s?(.*)")
         print("cmd = \"" .. cmd .. "\"")
-        if cmd == "" and not XiconPlateBufferDB_local["enabled"] then
+        if cmd == "" and not XiconPlateBuffsDB_local["enabled"] then
 
         end
     end
 end
 
-SlashCmdList["XICONPLATEBUFFER"] = XICONPLATEBUFFERfunc;
+SlashCmdList["XICONPLATEBUFFS"] = XICONPLATEBUFFSfunc;
