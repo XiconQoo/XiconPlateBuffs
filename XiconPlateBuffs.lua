@@ -546,10 +546,10 @@ function XiconPlateBuffs:CreateOptions()
             'func', function() XiconPlateBuffs.testMode = true end)
     local label = editBoxButton:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
     label:SetText("Test icons on nearby nameplates")
-    label:SetPoint("TOPLEFT", subText, "BOTTOMLEFT", 10, -15)
-    editBoxButton:SetPoint("TOPLEFT",label,"TOPRIGHT", 10, 0)
+    label:SetPoint("BOTTOMLEFT", editBoxButton, "TOPLEFT",-3,0)
+    editBoxButton:SetPoint("TOPLEFT",subText,"BOTTOMLEFT", 10, -15)
     i = i + 1
-    option_toggles[i] = label
+    option_toggles[i] = editBoxButton
 
     --- icon size option
     local iconSizeEditBox = createEditBox("Icon Size",panel,200,25,XiconPlateBuffsDB_local["iconSize"], function(frame)
