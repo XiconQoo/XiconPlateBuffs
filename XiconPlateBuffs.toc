@@ -5,5 +5,7 @@
 ## Version: 1.0-Beta
 ## SavedVariablesPerCharacter: XiconPlateBuffsDB
 
+libs\LibSimpleOptions-1.0\lib.xml
+
 Constants.lua
 XiconPlateBuffs.lua

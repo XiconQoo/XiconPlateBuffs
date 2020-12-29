@@ -134,13 +134,13 @@ function initTrackedCrowdControl()
             priority = 40,
             incapacite = true,
         },
-        --[[
+
         -- Innervate
         [GetSpellInfo(29166)] = {
             track = "buff",
             duration = 20,
             priority = 10,
-        },--]]
+        },
 
 
         -- Freezing Trap Effect

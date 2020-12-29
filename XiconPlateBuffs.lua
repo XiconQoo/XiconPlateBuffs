@@ -1,11 +1,10 @@
-local debug = false
 local ADDON_NAME = "XiconPlateBuffs"
 local select, tonumber, tostring = select, tonumber, tostring
 local XiconPlateBuffsDB_local
 
-local COMBATLOG_OBJECT_TYPE_PLAYER = COMBATLOG_OBJECT_TYPE_PLAYER
+--local COMBATLOG_OBJECT_TYPE_PLAYER = COMBATLOG_OBJECT_TYPE_PLAYER
+--local COMBATLOG_OBJECT_CONTROL_PLAYER = COMBATLOG_OBJECT_CONTROL_PLAYER
 local COMBATLOG_OBJECT_REACTION_HOSTILE = COMBATLOG_OBJECT_REACTION_HOSTILE
-local COMBATLOG_OBJECT_CONTROL_PLAYER = COMBATLOG_OBJECT_CONTROL_PLAYER
 local COMBATLOG_OBJECT_REACTION_NEUTRAL = COMBATLOG_OBJECT_REACTION_NEUTRAL
 
 local trackedCC = initTrackedCrowdControl()
@@ -24,7 +23,6 @@ end
 
 ---------------------------------------------------------------------------------------------
 
--- create core
 local xiconPlateBuffs = CreateFrame("Frame", "XiconPlateBuffs", UIParent)
 xiconPlateBuffs:EnableMouse(false)
 xiconPlateBuffs:SetWidth(1)
@@ -45,12 +43,14 @@ end
 
 local function getName(namePlate)
     local name
-    local _, _, _, _, eman, lvl, eman2 = namePlate:GetRegions()
+    local _, _, _, _, eman, _, _ = namePlate:GetRegions()
     if namePlate.aloftData then
         name = namePlate.aloftData.name
+    elseif sohighPlates then
+        name = namePlate.oldname:GetText()
     elseif strmatch(eman:GetText(), "%d") then
-        local _, _, _, _, _, eman = namePlate:GetRegions()
-        name = eman:GetText()
+        local _, _, _, _, _, nameRegion = namePlate:GetRegions()
+        name = nameRegion:GetText()
     else
         name = eman:GetText()
     end
@@ -101,7 +101,7 @@ end
 
 local function calcEndTime(timeLeft) return GetTime() + timeLeft end
 
-local function removeDebuff(destName, destGUID, spellID, spellName)
+local function removeDebuff(destName, destGUID, spellName)
     if trackedUnitNames[destName..destGUID] ~= nil then
         for i = 1, #trackedUnitNames[destName..destGUID] do
             if trackedUnitNames[destName..destGUID][i] then
@@ -114,7 +114,7 @@ local function removeDebuff(destName, destGUID, spellID, spellName)
                     end
                     trackedUnitNames[destName..destGUID][i]:SetParent(nil)
                     trackedUnitNames[destName..destGUID][i]:Hide()
-                    trackedUnitNames[destName..destGUID][i]:SetScript("OnUpdate", nil)
+                    --trackedUnitNames[destName..destGUID][i]:SetScript("OnUpdate", nil)
                     tremove(trackedUnitNames[destName..destGUID], i)
                     --count = count - 1
                 end
@@ -130,12 +130,13 @@ local function addDebuff(destName, destGUID, spellID, spellName)
     local _, _, texture = GetSpellInfo(spellID)
     local duration = trackedCC[spellName].duration
     local icon = CreateFrame("frame", nil, nil)
-    --if spellID == 42292 or spellID == 59752 then texture = "Interface\\Icons\\inv_jewelry_trinketpvp_02" end
+    icon:SetAlpha(XiconPlateBuffsDB_local["alpha"])
     icon.texture = icon:CreateTexture(nil, "BORDER")
     icon.texture:SetAllPoints(icon)
     icon.texture:SetTexture(texture)
-    icon.cooldown = icon:CreateFontString(nil, "OVERLAY")--CreateFrame("Cooldown", nil, icon)
-    icon.cooldown:SetFont("Fonts\\ARIALN.ttf", 10, "OUTLINE")
+    icon.cooldown = icon:CreateFontString(nil, "OVERLAY")
+    icon.cooldown:SetAlpha(XiconPlateBuffsDB_local["alpha"])
+    icon.cooldown:SetFont("Fonts\\ARIALN.ttf", XiconPlateBuffsDB_local["fontSize"], "OUTLINE")
 
     icon.cooldown:SetTextColor(0.7, 1, 0)
     icon.cooldown:SetAllPoints(icon)
@@ -169,37 +170,53 @@ local function addDebuff(destName, destGUID, spellID, spellName)
             iconFrame.cooldown:SetTextColor(1, 0, 0)
             iconFrame.cooldown:SetText(formatTimer(milliTimer, 1))
         else -- fallback in case SPELL_AURA_REMOVED is not fired
-            removeDebuff(destName, destGUID, spellID, spellName)
+            removeDebuff(destName, destGUID, spellName)
         end
     end
 
-    removeDebuff(destName, destGUID, spellID, spellName)
+    removeDebuff(destName, destGUID, spellName)
     tinsert(trackedUnitNames[destName..destGUID], icon)
     icon:SetScript("OnUpdate", function()
         iconTimer(icon)
     end)
+    --sorting
+    if XiconPlateBuffsDB_local["sorting"] == "none" then
+        return
+    end
+    if XiconPlateBuffsDB_local["sorting"] == "ascending" then
+        table.sort(trackedUnitNames[destName..destGUID], function(timeleftA,timeleftB) return timeleftA.endtime < timeleftB.endtime end)
+    elseif XiconPlateBuffsDB_local["sorting"] == "descending" then
+        table.sort(trackedUnitNames[destName..destGUID], function(timeleftA,timeleftB) return timeleftA.endtime > timeleftB.endtime end)
+    end
 end
 
 
 local function addIcons(dstName, namePlate)
-    --TODO configurable
     local num = #trackedUnitNames[dstName]
-    local size, width
+    local size, fontSize, width
     if not width then
         width = namePlate:GetWidth()
     end
-    if num * 20 + (num * 2 - 2) > width then
+    if XiconPlateBuffsDB_local["responsive"] and num * XiconPlateBuffsDB_local["iconSize"] + (num * 2 - 2) > width then
         size = (width - (num * 2 - 2)) / num
+        if XiconPlateBuffsDB_local["fontSize"] < size/2 then
+            fontSize = XiconPlateBuffsDB_local["fontSize"]
+        else
+            fontSize = size / 2
+        end
     else
-        size = 50
+        fontSize = XiconPlateBuffsDB_local["fontSize"]
+        size = XiconPlateBuffsDB_local["iconSize"]
     end
     for i = 1, #trackedUnitNames[dstName] do
         trackedUnitNames[dstName][i]:ClearAllPoints()
         trackedUnitNames[dstName][i]:SetWidth(size)
         trackedUnitNames[dstName][i]:SetHeight(size)
-        trackedUnitNames[dstName][i].cooldown:SetFont("Fonts\\ARIALN.ttf", 10, "OUTLINE") --
+        trackedUnitNames[dstName][i]:SetAlpha(XiconPlateBuffsDB_local["alpha"])
+        trackedUnitNames[dstName][i].cooldown:SetAlpha(XiconPlateBuffsDB_local["alpha"])
+        trackedUnitNames[dstName][i].cooldown:SetFont("Fonts\\ARIALN.ttf", fontSize, "OUTLINE")
         if i == 1 then
-            trackedUnitNames[dstName][i]:SetPoint("TOPLEFT", namePlate, 31, size + -4)
+            trackedUnitNames[dstName][i]:SetPoint("TOPLEFT", namePlate, XiconPlateBuffsDB_local["xOffset"], size + XiconPlateBuffsDB_local["yOffset"])
         else
             trackedUnitNames[dstName][i]:SetPoint("TOPLEFT", trackedUnitNames[dstName][i - 1], size + 2, 0)
         end
@@ -225,10 +242,10 @@ local function updateIconsOnUnit(unit)
             for i = 1, 40 do
                 local debuffName,rank,icon,count,dtype,duration,timeLeft,isMine = UnitDebuff(unit, i)
                 if not debuffName then break end
-                if trackedCC[debuffName] then
+                if trackedCC[debuffName] and timeLeft ~= nil then
                     --update buff durations
                     for j = 1, #trackedUnitNames[destName] do
-                        if trackedUnitNames[destName][j] and trackedUnitNames[destName][j].name == debuffName and timeLeft ~= nil then
+                        if trackedUnitNames[destName][j] and trackedUnitNames[destName][j].name == debuffName then
                             trackedUnitNames[destName][j].endtime = calcEndTime(timeLeft)
                             --break
                         end
@@ -265,6 +282,9 @@ local function assignDebuffs(dstName, namePlate, force)
             if splitStr[1] == dstName and #v > 0 and v[1]:GetParent() == nil then
                 name = k
                 break
+            elseif splitStr[1] == dstName and #v > 0 and namePlate.xiconPlateHooked then
+                --update plate to rearrange icons
+                name = k
             end
             --[[if string.match(k, dstName) and #v > 0 and v[1]:GetParent() == nil then
                 name = k
@@ -308,14 +328,29 @@ local events = {} -- store event functions to be assigned to reputation frame
 
 function events:ADDON_LOADED(...)
     if select(1, ...) == ADDON_NAME then
-        print("LOADED - \"/xtc\" toggles the display frame. \"/xtc enable/disable\" enables or disables the addon")
         XiconPlateBuffsDB_local = XiconPlateBuffsDB
         if not XiconPlateBuffsDB_local then
             XiconPlateBuffsDB_local = {}
+            XiconPlateBuffsDB_local["iconSize"] = 40
+            XiconPlateBuffsDB_local["yOffset"] = 15
+            XiconPlateBuffsDB_local["xOffset"] = 0
+            XiconPlateBuffsDB_local["fontSize"] = 15
+            XiconPlateBuffsDB_local["responsive"] = true
+            XiconPlateBuffsDB_local["sorting"] = 'ascending'
+            XiconPlateBuffsDB_local["alpha"] = 1.0
             XiconPlateBuffsDB = XiconPlateBuffsDB_local
         end
-
-        local date = date("%m/%d/%y")
+        if not XiconPlateBuffsDB_local["iconSize"] then XiconPlateBuffsDB_local["iconSize"] = 40 end
+        if not XiconPlateBuffsDB_local["yOffset"] then XiconPlateBuffsDB_local["yOffset"] = 15 end
+        if not XiconPlateBuffsDB_local["xOffset"] then XiconPlateBuffsDB_local["xOffset"] = 0 end
+        if not XiconPlateBuffsDB_local["fontSize"] then XiconPlateBuffsDB_local["fontSize"] = 15 end
+        if XiconPlateBuffsDB_local["responsive"] == nil then XiconPlateBuffsDB_local["responsive"] = true end
+        if not XiconPlateBuffsDB_local["sorting"] then XiconPlateBuffsDB_local["sorting"] = 'ascending' end
+        if not XiconPlateBuffsDB_local["alpha"] then XiconPlateBuffsDB_local["alpha"] = 1.0 end
+        --local date = date("%m/%d/%y")
+        xiconPlateBuffs:CreateOptions()
+        print("Loaded")
+        print("write /xpb or /xpbconfig for options")
         xiconPlateBuffs:UnregisterEvent("ADDON_LOADED")
     end
 end
@@ -331,7 +366,7 @@ function events:COMBAT_LOG_EVENT_UNFILTERED(...)
             updateIconsOnUnitGUID(dstGUID)
         elseif (eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL") then
             --print(eventType .. " - " .. spellName .. " - " .. dstName .. " - removeDebuff")
-            removeDebuff(name, dstGUID, spellID, spellName)
+            removeDebuff(name, dstGUID, spellName)
         elseif eventType == "UNIT_DIED" then
             trackedUnitNames[dstName..dstGUID] = nil
         end
@@ -350,10 +385,11 @@ function events:UPDATE_MOUSEOVER_UNIT()
     updateIconsOnUnit("mouseover")
 end
 
-function events:PLAYER_ENTERING_WORLD(...)
-    local instance = select(2, IsInInstance())
-    trackedUnitNames = {}
-    --[[if (instance == "arena") then
+function events:PLAYER_ENTERING_WORLD(...) -- TODO add option to enable/disable in open world/instance/etc
+    trackedUnitNames = {} -- wipe all data
+    --[[
+    local instance = select(2, IsInInstance()
+    if (instance == "arena") then
         self:JoinedArena()
     elseif (instance ~= "arena" and self.lastInstance == "arena") then
         self:HideFrame()
@@ -434,24 +470,180 @@ end)
 
 ---------------------------------------------------------------------------------------------
 
--- SLASH COMMAND
+-- INTERFACE OPTIONS
 
 ---------------------------------------------------------------------------------------------
 
-SLASH_XICONPLATEBUFFS1 = "/xpb";
-
-local enable, disable, trinket1, trinket2= "enable", "disable", "1", "2"
-
-local function XICONPLATEBUFFSfunc(msg)
-    if msg == "" then
-
-    else
-        local _, _, cmd, args = string.find(msg, "%s?(%w+)%s?(.*)")
-        print("cmd = \"" .. cmd .. "\"")
-        if cmd == "" and not XiconPlateBuffsDB_local["enabled"] then
-
-        end
+local function XiconPlateBuffs_Test(text)
+    if text and text ~= "" then
+        local dstName,dstGUID = string.gsub(text, "%s+", ""), "0x00001312031"
+        addDebuff(dstName, dstGUID, 29166, GetSpellInfo(29166)) -- innervate
+        addDebuff(dstName, dstGUID, 22570, GetSpellInfo(22570)) -- maim
+        addDebuff(dstName, dstGUID, 14309, GetSpellInfo(14309)) -- freezing trap
+        addDebuff(dstName, dstGUID, 12826, GetSpellInfo(12826)) -- polymorph
     end
 end
 
-SlashCmdList["XICONPLATEBUFFS"] = XICONPLATEBUFFSfunc;
+local function onEscapePressed(frame)
+    frame:SetText(frame.oldValue)
+    frame:ClearFocus()
+end
+
+local function onEnterPressed(frame)
+    frame.oldValue = frame:GetText()
+    frame:ClearFocus()
+end
+
+local function setEditBoxValue(frame, value)
+    frame:SetText(tostring(value))
+    frame:SetCursorPosition(0)
+    frame:ClearFocus()
+    frame.setFunc(frame)
+end
+
+local function onEnter(frame)
+    frame.oldValue = frame:GetText()
+end
+
+local function onLeave(frame)
+    frame:SetText(frame.oldValue)
+end
+
+local function createEditBox(name, parent, width, height, value, setFunc)
+    local editbox = CreateFrame("EditBox",parent:GetName()..name,parent,"InputBoxTemplate")
+    editbox:SetText(value)
+    editbox:SetCursorPosition(0)
+    editbox:SetHeight(height)
+    editbox:SetWidth(width)
+    editbox:SetAutoFocus(false)
+    editbox:SetScript("OnEditFocusGained", onEnter)
+    editbox:SetScript("OnEditFocusLost", onLeave)
+    editbox:SetScript("OnEnterPressed", onEnterPressed)
+    editbox:SetScript("OnEscapePressed", onEscapePressed)
+    editbox:HookScript("OnEnterPressed", setFunc)
+    editbox.setFunc = setFunc
+
+    local label = editbox:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
+    label:SetText(name)
+    label:SetPoint("BOTTOMLEFT", editbox, "TOPLEFT",-3,0)
+    return editbox
+end
+
+local XiconPlateBuffs_Options = LibStub("LibSimpleOptions-1.0")
+LibStub("LibSimpleOptions-1.0").AddSlashCommand("XiconPlateBuffs", "/xpb", "/xpbconfig")
+function xiconPlateBuffs:CreateOptions()
+    local panel = XiconPlateBuffs_Options.AddOptionsPanel("XiconPlateBuffs", function() end)
+    local i,option_toggles = 1, {}
+
+    local _,subText = panel:MakeTitleTextAndSubText("XiconPlateBuffs Addon", "General settings")
+
+    --- Test input option
+    local editTestBox = createEditBox("Mob/Unit exact name (be near the mob)",panel,200,25, "Dampscale Basilisk", function() end)
+    editTestBox:SetPoint("TOPLEFT",subText,"BOTTOMLEFT", 10, -15)
+    option_toggles[i] = editTestBox
+
+    --- Test button option
+    local editBoxButton = panel:MakeButton(
+            'name', 'Test',
+            'description', 'Test',
+            'default', true,
+            'func', function() XiconPlateBuffs_Test(editTestBox:GetText()) end)
+    editBoxButton:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, 0)
+    i = i + 1
+    option_toggles[i] = editBoxButton
+
+    --- icon size option
+    local iconSizeEditBox = createEditBox("Icon Size",panel,200,25,XiconPlateBuffsDB_local["iconSize"], function(frame)
+        if frame:GetText() and tonumber(frame:GetText()) then
+            XiconPlateBuffsDB_local["iconSize"] = tonumber(frame:GetText())
+        end
+    end)
+    iconSizeEditBox:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, -20)
+    i = i + 1
+    option_toggles[i] = iconSizeEditBox
+
+    --- font size option
+    local fontSizeEditBox = createEditBox("Font Size",panel,200,25,XiconPlateBuffsDB_local["fontSize"], function(frame)
+        if frame:GetText() and tonumber(frame:GetText()) then
+            XiconPlateBuffsDB_local["fontSize"] = tonumber(frame:GetText())
+        end
+    end)
+    fontSizeEditBox:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, -10)
+    i = i + 1
+    option_toggles[i] = fontSizeEditBox
+
+    --- y offset option
+    local yOffsetEditBox = createEditBox("Vertical Offset",panel,200,25,XiconPlateBuffsDB_local["yOffset"], function(frame)
+        if frame:GetText() and tonumber(frame:GetText()) then
+            XiconPlateBuffsDB_local["yOffset"] = tonumber(frame:GetText())
+        end
+    end)
+    yOffsetEditBox:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, -10)
+    i = i + 1
+    option_toggles[i] = yOffsetEditBox
+
+    --- x offset option
+    local xOffsetEditBox = createEditBox("Horizontal Offset",panel,200,25,XiconPlateBuffsDB_local["xOffset"], function(frame)
+        if frame:GetText() and tonumber(frame:GetText()) then
+            XiconPlateBuffsDB_local["xOffset"] = tonumber(frame:GetText())
+        end
+    end)
+    xOffsetEditBox:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, -10)
+    i = i + 1
+    option_toggles[i] = xOffsetEditBox
+
+    --- alpha option
+    local alphaEditBox = createEditBox("Alpha (1.0 is 100%, 0.0 is invisible)",panel,200,25,XiconPlateBuffsDB_local["alpha"], function(frame)
+        if frame:GetText() and tonumber(frame:GetText()) then
+            XiconPlateBuffsDB_local["alpha"] = tonumber(frame:GetText())
+        end
+    end)
+    alphaEditBox:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, -10)
+    i = i + 1
+    option_toggles[i] = alphaEditBox
+
+    --- responsiveness option
+    local responsiveToggle = panel:MakeToggle(
+            'name', 'Resize Icons responsively',
+            'description', 'Resize Icons responsively',
+            'default', true,
+            'getFunc', function() return XiconPlateBuffsDB_local["responsive"] or true end,
+            'setFunc', function(value) XiconPlateBuffsDB_local["responsive"] = value end)
+    responsiveToggle:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", -5, 0)
+    i = i + 1
+    option_toggles[i] = responsiveToggle
+
+    --- sorting option
+    local sortingDropdown = panel:MakeDropDown(
+            'name', 'Sorting',
+            'description', 'Specify sorting method',
+            'values', {
+                'none', "None",
+                'ascending', "Ascending",
+                'descending', "Descending",
+            },
+            'default', 'none',
+            'getFunc', function() return XiconPlateBuffsDB_local["sorting"] or "none" end,
+            'setFunc', function(value) XiconPlateBuffsDB_local["sorting"] = value end)
+    sortingDropdown:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", -15, -10)
+    i = i + 1
+    option_toggles[i] = sortingDropdown
+
+    --- default settings button
+    local defaultSettingsButton = panel:MakeButton(
+            'name', 'Default Settings',
+            'description', 'Default Settings',
+            'default', true,
+            'func', function()
+                setEditBoxValue(iconSizeEditBox, 50)
+                setEditBoxValue(yOffsetEditBox, -4)
+                setEditBoxValue(xOffsetEditBox,31)
+                setEditBoxValue(fontSizeEditBox,10)
+                responsiveToggle.SetValue(responsiveToggle, true)
+                sortingDropdown.SetValue(sortingDropdown, 'none')
+                setEditBoxValue(alphaEditBox, 1.0)
+            end)
+    defaultSettingsButton:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, 0)
+    i = i + 1
+    option_toggles[i] = defaultSettingsButton
+end
