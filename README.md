@@ -1,4 +1,4 @@
-# XiconPlateBuffs
+# XiconPlateBuffs TBC Addon
 
 v1.2-Beta
 
