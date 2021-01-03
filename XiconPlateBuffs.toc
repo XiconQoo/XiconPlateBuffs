@@ -8,5 +8,7 @@
 lib\LibSimpleOptions-1.0\lib.xml
 lib\LibStub\LibStub.lua
 
+
 Constants.lua
+XiconDebuffLib.lua
 XiconPlateBuffs.lua
