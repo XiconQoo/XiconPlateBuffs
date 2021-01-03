@@ -33,16 +33,6 @@ XiconDebuffModule:SetAlpha(0)
 
 function XiconDebuffModule:Init(savedVariables)
     XiconPlateBuffsDB_local = savedVariables
-    if not XiconPlateBuffsDB_local then
-        XiconPlateBuffsDB_local = {}
-        XiconPlateBuffsDB_local["iconSize"] = 40
-        XiconPlateBuffsDB_local["yOffset"] = 15
-        XiconPlateBuffsDB_local["xOffset"] = 0
-        XiconPlateBuffsDB_local["fontSize"] = 15
-        XiconPlateBuffsDB_local["responsive"] = true
-        XiconPlateBuffsDB_local["sorting"] = 'ascending'
-        XiconPlateBuffsDB_local["alpha"] = 1.0
-    end
     print("initialized")
 end
 
