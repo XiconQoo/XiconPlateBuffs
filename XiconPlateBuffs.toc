@@ -10,5 +10,5 @@ lib\LibStub\LibStub.lua
 
 
 Constants.lua
-XiconDebuffLib.lua
+XiconDebuffModule.lua
 XiconPlateBuffs.lua

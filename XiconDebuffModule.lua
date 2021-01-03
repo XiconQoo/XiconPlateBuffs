@@ -1,4 +1,4 @@
-local LIB_NAME = "XiconDebuffsLib"
+local LIB_NAME = "XiconDebuffModule"
 local trackedUnitNames = {}
 local trackedCC = initTrackedCrowdControl()
 local XiconPlateBuffsDB_local
@@ -19,11 +19,11 @@ end
 
 ---------------------------------------------------------------------------------------------
 
-XiconDebuffLib = CreateFrame("Frame", "XiconDebuffsLib", UIParent)
-XiconDebuffLib:EnableMouse(false)
-XiconDebuffLib:SetWidth(1)
-XiconDebuffLib:SetHeight(1)
-XiconDebuffLib:SetAlpha(0)
+XiconDebuffModule = CreateFrame("Frame", "XiconDebuffModule", UIParent)
+XiconDebuffModule:EnableMouse(false)
+XiconDebuffModule:SetWidth(1)
+XiconDebuffModule:SetHeight(1)
+XiconDebuffModule:SetAlpha(0)
 
 ---------------------------------------------------------------------------------------------
 
@@ -31,7 +31,7 @@ XiconDebuffLib:SetAlpha(0)
 
 ---------------------------------------------------------------------------------------------
 
-function XiconDebuffLib:Init(savedVariables)
+function XiconDebuffModule:Init(savedVariables)
     XiconPlateBuffsDB_local = savedVariables
     if not XiconPlateBuffsDB_local then
         XiconPlateBuffsDB_local = {}
@@ -46,11 +46,11 @@ function XiconDebuffLib:Init(savedVariables)
     print("initialized")
 end
 
-function XiconDebuffLib:UpdateSavedVariables(savedVariables)
+function XiconDebuffModule:UpdateSavedVariables(savedVariables)
     XiconPlateBuffsDB_local = savedVariables
 end
 
-function XiconDebuffLib:GetTrackedUnitNames()
+function XiconDebuffModule:GetTrackedUnitNames()
     return trackedUnitNames
 end
 
@@ -131,7 +131,7 @@ local function removeDebuff(destName, destGUID, spellName)
     end
 end
 
-function XiconDebuffLib:addDebuff(destName, destGUID, spellID, spellName)
+function XiconDebuffModule:addDebuff(destName, destGUID, spellID, spellName)
     if trackedUnitNames[destName..destGUID] == nil then
         trackedUnitNames[destName..destGUID] = {}
     end
@@ -269,7 +269,7 @@ local function updateIconsOnUnitGUID(unitGUID)
     end
 end
 
-function XiconDebuffLib:assignDebuffs(dstName, namePlate, force)
+function XiconDebuffModule:assignDebuffs(dstName, namePlate, force)
     local name
     if force and namePlate.xiconGUID then
         name = dstName .. namePlate.xiconGUID
@@ -326,7 +326,7 @@ function XiconDebuffLib:assignDebuffs(dstName, namePlate, force)
     end
 end
 
-function XiconDebuffLib:updateNameplate(unit, plate, unitName)
+function XiconDebuffModule:updateNameplate(unit, plate, unitName)
     local guid = UnitGUID(unit)
     if not plate.xiconGUID then
         plate.xiconGUID = guid
@@ -334,7 +334,7 @@ function XiconDebuffLib:updateNameplate(unit, plate, unitName)
         plate.xiconGUID = guid
     end
     updateIconsOnUnit(unit)
-    XiconDebuffLib:assignDebuffs(unitName, plate, true)
+    XiconDebuffModule:assignDebuffs(unitName, plate, true)
 end
 
 ---------------------------------------------------------------------------------------------
@@ -352,7 +352,7 @@ function events:COMBAT_LOG_EVENT_UNFILTERED(...)
         local name = string.gsub(dstName, "%s+", "")
         if (eventType == "SPELL_AURA_APPLIED" or eventType == "SPELL_AURA_REFRESH") then
             --print(eventType .. " - " .. spellName .. " - addDebuff")
-            XiconDebuffLib:addDebuff(name, dstGUID, spellID, spellName)
+            XiconDebuffModule:addDebuff(name, dstGUID, spellID, spellName)
             updateIconsOnUnitGUID(dstGUID)
         elseif (eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL") then
             --print(eventType .. " - " .. spellName .. " - " .. dstName .. " - removeDebuff")
@@ -385,9 +385,9 @@ end
 
 ---------------------------------------------------------------------------------------------
 
-XiconDebuffLib:SetScript("OnEvent", function(self, event, ...)
+XiconDebuffModule:SetScript("OnEvent", function(self, event, ...)
     events[event](self, ...); -- call one of the functions above
 end);
 for k, _ in pairs(events) do
-    XiconDebuffLib:RegisterEvent(k); -- Register all events for which handlers have been defined
+    XiconDebuffModule:RegisterEvent(k); -- Register all events for which handlers have been defined
 end
