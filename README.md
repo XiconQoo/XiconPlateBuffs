@@ -12,6 +12,9 @@ This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
 
 ### Changes
 
+v1.3-Beta
+- fix register UNIT_DIED event to clear icons
+
 v1.2-Beta
 - add support with updated Icicle (https://github.com/XiconQoo/Icicle)
 - fix icons reappearing
@@ -42,3 +45,4 @@ v1.0-Beta
 - add icon sizing by debuff/category
 - add non cc debuffs
 - add important buffs like bubble, innervate etc
+- reuse icon frames on nameplates for less memory usage
