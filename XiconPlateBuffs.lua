@@ -127,13 +127,8 @@ XiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
                 local namePlate = select(i, WorldFrame:GetChildren())
                 if namePlate:GetNumRegions() > 2 and namePlate:GetNumChildren() >= 1 then
                     if namePlate:IsVisible() then
-                        --namePlate:SetWidth(100)
-                        --namePlate:SetHeight(10)
                         local name = getName(namePlate)
                         local dstName = string.gsub(name, "%s+", "")
-                        if not namePlate.xiconPlate or namePlate.nameStr and namePlate.nameStr ~= name then
-                            namePlate.xiconPlate = 0
-                        end
                         namePlate.nameStr = name
                         if testMode then
                             local dstGUID = "0x00001312031"
