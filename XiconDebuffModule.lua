@@ -318,7 +318,7 @@ function XiconDebuffModule:updateNameplate(unit, plate, unitName)
     elseif plate.xiconGUID ~= guid then
         plate.xiconGUID = guid
     end
-    updateIconsOnUnit(unit)
+    updateDebuffsOnUnit(unit)
     XiconDebuffModule:assignDebuffs(unitName, plate, true)
 end
 
