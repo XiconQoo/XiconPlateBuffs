@@ -12,6 +12,11 @@ This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
 
 ### Changes
 
+v1.4-Beta
+- again cleaner hide icons
+- cache guid's of known plates
+- add debuff handling by guid
+
 v1.3-Beta
 - fix register UNIT_DIED event to clear icons
 
