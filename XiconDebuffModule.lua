@@ -270,12 +270,12 @@ local function updateDebuffsOnUnitGUID(unitGUID)
     end
 end
 
-local function updateDebuffsOnNameplate(name, namePlate)
+local function updateDebuffsOnNameplate(name, namePlate, force)
     if trackedUnitNames[name] then
-        --namePlate.xiconPlate = #trackedUnitNames[name]
         for j = 1, #trackedUnitNames[name] do
             trackedUnitNames[name][j]:SetParent(namePlate)
             trackedUnitNames[name][j]:Show()
+            trackedUnitNames[name][j]:SetFrameStrata(force and "LOW" or "BACKGROUND")
         end
         addIcons(name, namePlate)
         if not namePlate:GetScript("OnHide") then
@@ -315,7 +315,7 @@ function XiconDebuffModule:assignDebuffs(dstName, namePlate, force)
     end
     if name then
         -- nameplate with either force or guess was found
-        updateDebuffsOnNameplate(name, namePlate)
+        updateDebuffsOnNameplate(name, namePlate, force)
     end
 end
 
