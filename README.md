@@ -1,6 +1,6 @@
 # XiconPlateBuffs TBC Addon
 
-v1.2-Beta
+[v1.4-Beta Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.4-Beta/XiconPlateBuffs_v1.4-Beta.zip)
 
 XiconPlateBuffs's goal is to accurately show CC in Arena/BG on any nameplate, without the need to hover/target/interact with the nameplate or the nameplate even beeing visible when CC was applied.
 
