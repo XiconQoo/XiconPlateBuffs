@@ -1,6 +1,6 @@
 # XiconPlateBuffs TBC Addon
 
-### [v1.4-Beta Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.4-Beta/XiconPlateBuffs_v1.4-Beta.zip)
+### [v1.5-Beta Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.5-Beta/XiconPlateBuffs_v1.5-Beta.zip)
 
 XiconPlateBuffs's goal is to accurately show CC in Arena/BG on any nameplate, without the need to hover/target/interact with the nameplate or the nameplate even beeing visible when CC was applied.
 
@@ -11,6 +11,17 @@ This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
 ![Screenshot](../readme-media/sample.png)
 
 ### Changes
+
+v1.5-Beta
+- SoHighPlates revert to nameplate.oldname:GetText() (more reliant)
+- add framePool array to reuse icon frames (less memory usage)
+- improve hideIcons (icon's OnUpdate on elapsed timer will recycle itself to framePool)
+- shown icons will be reused and timer will be updated (no new icons for active spells)
+- add option to edit cooldown font (standard blizz fonts)
+- add synchronization between players (also syncs data from CCTracker)
+- handle spells from synchronization by spellID to overcome localization
+- cooldown text color updated properly
+- SPELL_AURA_REMOVED handled separately (sometimes destFlag and srcFlag are different)
 
 v1.4-Beta
 - again cleaner hide icons
