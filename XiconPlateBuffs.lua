@@ -39,8 +39,8 @@ local function getName(namePlate)
     if namePlate.aloftData then
         name = namePlate.aloftData.name
     elseif sohighPlates then
-        name = namePlate.name:GetText()
-        --name = namePlate.oldname:GetText()
+        --name = namePlate.name:GetText()
+        name = namePlate.oldname:GetText()
     elseif strmatch(eman:GetText(), "%d") then
         local _, _, _, _, _, nameRegion = namePlate:GetRegions()
         name = nameRegion:GetText()
@@ -79,6 +79,7 @@ function events:ADDON_LOADED(...)
         if XiconPlateBuffsDB_local["responsive"] == nil then XiconPlateBuffsDB_local["responsive"] = true end
         if not XiconPlateBuffsDB_local["sorting"] then XiconPlateBuffsDB_local["sorting"] = 'ascending' end
         if not XiconPlateBuffsDB_local["alpha"] then XiconPlateBuffsDB_local["alpha"] = 1.0 end
+        if not XiconPlateBuffsDB_local["font"] then XiconPlateBuffsDB_local["font"] = "Fonts\\ARIALN.ttf" end
         XiconPlateBuffs:CreateOptions()
 
         XiconDebuffModule:Init(XiconPlateBuffsDB_local)
@@ -112,7 +113,7 @@ end
 
 ---------------------------------------------------------------------------------------------
 
-local updateInterval, lastUpdate = .02, 0
+local updateInterval, lastUpdate = .1, 0
 XiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
     lastUpdate = lastUpdate + elapsed
     if lastUpdate > updateInterval then
@@ -128,7 +129,6 @@ XiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
                 if namePlate:GetNumRegions() > 2 and namePlate:GetNumChildren() >= 1 then
                     if namePlate:IsVisible() then
                         local name = getName(namePlate)
-                        local dstName = string.gsub(name, "%s+", "")
                         namePlate.nameStr = name
                         if testMode then
                             local dstGUID = "0x00001312031"
@@ -142,11 +142,11 @@ XiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
                         local target = UnitExists("target") and namePlate:GetAlpha() == 1 or nil
                         local mouseover = UnitExists("mouseover") and highlight:IsShown() or nil
                         if target then
-                            XiconDebuffModule:updateNameplate("target", namePlate, dstName)
+                            XiconDebuffModule:updateNameplate("target", namePlate, name)
                         elseif mouseover then
-                            XiconDebuffModule:updateNameplate("mouseover", namePlate, dstName)
+                            XiconDebuffModule:updateNameplate("mouseover", namePlate, name)
                         else
-                            XiconDebuffModule:assignDebuffs(dstName, namePlate, false)
+                            XiconDebuffModule:assignDebuffs(name, namePlate, false)
                         end
                     end
                 end
@@ -332,6 +332,26 @@ function XiconPlateBuffs:CreateOptions()
     sortingDropdown:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", -15, -15)
     i = i + 1
     option_toggles[i] = sortingDropdown
+
+    --- font option
+    local fontDropdown = panel:MakeDropDown(
+            'name', 'Cooldown Font',
+            'description', 'Choose a Font',
+            'values', {
+                'Fonts\\ARIALN.ttf', "Arial",
+                'Fonts\\FRIZQT__.ttf', "Fritz Quadrata",
+                'Fonts\\MORPHEUS.ttf', "Morpheus",
+                'Fonts\\skurri.ttf', "Skurri",
+            },
+            'default', 'Fonts\\ARIALN.ttf',
+            'getFunc', function() return XiconPlateBuffsDB_local["font"] end,
+            'setFunc', function(value)
+                XiconPlateBuffsDB_local["font"] = value
+                XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
+            end)
+    fontDropdown:SetPoint("TOPLEFT",sortingDropdown,"TOPRIGHT", 0, 0)
+    --i = i + 1
+    --option_toggles[i] = sortingDropdown
 
     --- default settings button
     local defaultSettingsButton = panel:MakeButton(
