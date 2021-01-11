@@ -41,11 +41,11 @@ function initTrackedCrowdControl()
             id = 8983,
         },
         -- Pounce
-        [GetSpellInfo(9005)] = {
+        [GetSpellInfo(27006)] = {
             track = "debuff",
             duration = 3,
             priority = 40,
-            id = 9005,
+            id = 27006,
         },
         -- Maim
         [GetSpellInfo(22570)] = {

@@ -1,7 +1,7 @@
 local ADDON_NAME = "XiconPlateBuffs"
 local select, tonumber, tostring = select, tonumber, tostring
 local XiconPlateBuffsDB_local
-local XiconDebuffModule = XiconDebuffModule
+local XiconDebuffModule = GetXiconDebuffModuleModule()
 
 local print = function(s)
     local str = s
@@ -80,6 +80,8 @@ function events:ADDON_LOADED(...)
         if not XiconPlateBuffsDB_local["sorting"] then XiconPlateBuffsDB_local["sorting"] = 'ascending' end
         if not XiconPlateBuffsDB_local["alpha"] then XiconPlateBuffsDB_local["alpha"] = 1.0 end
         if not XiconPlateBuffsDB_local["font"] then XiconPlateBuffsDB_local["font"] = "Fonts\\ARIALN.ttf" end
+        if not XiconPlateBuffsDB_local["point"] then XiconPlateBuffsDB_local["point"] = "TOPLEFT" end
+        if not XiconPlateBuffsDB_local["relativePoint"] then XiconPlateBuffsDB_local["relativePoint"] = "LEFT" end
         XiconPlateBuffs:CreateOptions()
 
         XiconDebuffModule:Init(XiconPlateBuffsDB_local)
@@ -113,7 +115,7 @@ end
 
 ---------------------------------------------------------------------------------------------
 
-local updateInterval, lastUpdate = .1, 0
+local updateInterval, lastUpdate = .03, 0
 XiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
     lastUpdate = lastUpdate + elapsed
     if lastUpdate > updateInterval then
