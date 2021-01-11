@@ -1,6 +1,11 @@
 # XiconPlateBuffs TBC Addon
 
-### [v1.5-Beta Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.5-Beta/XiconPlateBuffs_v1.5-Beta.zip)
+### [v1.6-Beta Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.6-Beta/XiconPlateBuffs_v1.6-Beta.zip)
+
+#### Recommended addons to use with XiconPlateBuffs
+
+#### - [BuffLib](https://github.com/Schaka/BuffLib/releases/download/v1.1.1/BuffLib.zip)
+#### - [Compatibility](https://github.com/raethkcj/Compatibility)
 
 XiconPlateBuffs's goal is to accurately show CC in Arena/BG on any nameplate, without the need to hover/target/interact with the nameplate or the nameplate even beeing visible when CC was applied.
 
@@ -11,6 +16,12 @@ This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
 ![Screenshot](../readme-media/sample.png)
 
 ### Changes
+
+v1.6-Beta
+- fix sync errors
+- less sync messages (boiled down to aura_apply, aura_refresh, aura_remove, unit_died)
+- fix icons appearing twice
+- attach unused icons in framePool to UIParent and make the invisible
 
 v1.5-Beta
 - SoHighPlates revert to nameplate.oldname:GetText() (more reliant)
