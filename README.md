@@ -2,6 +2,11 @@
 
 ### [v1.6-Beta Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.6-Beta/XiconPlateBuffs_v1.6-Beta.zip)
 
+#### Recommended addons to use with XiconPlateBuffs
+
+#### - [BuffLib](https://github.com/Schaka/BuffLib/releases/download/v1.1.1/BuffLib.zip)
+#### - [Compatibility](https://github.com/raethkcj/Compatibility)
+
 XiconPlateBuffs's goal is to accurately show CC in Arena/BG on any nameplate, without the need to hover/target/interact with the nameplate or the nameplate even beeing visible when CC was applied.
 
 This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
