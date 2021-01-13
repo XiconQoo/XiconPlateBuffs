@@ -134,10 +134,10 @@ XiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
                         namePlate.nameStr = name
                         if testMode then
                             local dstGUID = "0x00001312031"
-                            XiconDebuffModule:addDebuff(dstName, dstGUID, 29166, GetSpellInfo(29166)) -- innervate
-                            XiconDebuffModule:addDebuff(dstName, dstGUID, 22570, GetSpellInfo(22570)) -- maim
-                            XiconDebuffModule:addDebuff(dstName, dstGUID, 14309, GetSpellInfo(14309)) -- freezing trap
-                            XiconDebuffModule:addDebuff(dstName, dstGUID, 12826, GetSpellInfo(12826)) -- polymorph
+                            XiconDebuffModule:addDebuff(name, dstGUID, 29166, 15) -- innervate
+                            XiconDebuffModule:addDebuff(name, dstGUID, 22570, 5) -- maim
+                            XiconDebuffModule:addDebuff(name, dstGUID, 14309, 8) -- freezing trap
+                            XiconDebuffModule:addDebuff(name, dstGUID, 12826, 5) -- polymorph
                         end
                         -- check if namePlate is target or mouseover
                         local border, castborder, casticon, highlight, nameText, levelText, levelIcon, raidIcon = namePlate:GetRegions()
@@ -340,16 +340,18 @@ function XiconPlateBuffs:CreateOptions()
             'name', 'Cooldown Font',
             'description', 'Choose a Font',
             'values', {
-                'Fonts\\ARIALN.ttf', "Arial",
-                'Fonts\\FRIZQT__.ttf', "Fritz Quadrata",
-                'Fonts\\MORPHEUS.ttf', "Morpheus",
-                'Fonts\\skurri.ttf', "Skurri",
+                "Fonts\\ARIALN.ttf", "Arial",
+                "Fonts\\FRIZQT__.ttf", "Fritz Quadrata",
+                "Fonts\\MORPHEUS.ttf", "Morpheus",
+                "Fonts\\skurri.ttf", "Skurri",
             },
-            'default', 'Fonts\\ARIALN.ttf',
+            'default', "Fonts\\ARIALN.ttf",
             'getFunc', function() return XiconPlateBuffsDB_local["font"] end,
             'setFunc', function(value)
-                XiconPlateBuffsDB_local["font"] = value
-                XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
+                if value then
+                    XiconPlateBuffsDB_local["font"] = value
+                    XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
+                end
             end)
     fontDropdown:SetPoint("TOPLEFT",sortingDropdown,"TOPRIGHT", 0, 0)
     --i = i + 1

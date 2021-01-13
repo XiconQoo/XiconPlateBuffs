@@ -102,8 +102,9 @@ function GetXiconDebuffModuleModule()
             for i = 1, #trackedUnitNames[destName..destGUID] do
                 if trackedUnitNames[destName..destGUID][i] then
                     if trackedUnitNames[destName..destGUID][i].spellID == spellID then
-                        trackedUnitNames[destName..destGUID][i]:SetParent(UIParent)
+                        trackedUnitNames[destName..destGUID][i]:Hide()
                         trackedUnitNames[destName..destGUID][i]:SetAlpha(0)
+                        trackedUnitNames[destName..destGUID][i]:SetParent(UIParent)
                         trackedUnitNames[destName..destGUID][i]:SetScript("OnUpdate", nil)
                         --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(0,0)
                         framePool[#framePool + 1] = tremove(trackedUnitNames[destName..destGUID], i)
@@ -132,16 +133,16 @@ function GetXiconDebuffModuleModule()
         end
         if not found then
             --print("not found .. spellID = " .. spellID)
-            XiconDebuffModule:addDebuff(destName, destGUID, spellID, spellName, timeLeft)
+            XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft)
         end
     end
 
-    function XiconDebuffModule:addDebuff(destName, destGUID, spellID, spellName, timeLeft)
+    function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft)
         if trackedUnitNames[destName..destGUID] == nil then
             trackedUnitNames[destName..destGUID] = {}
         end
-        local _, _, texture = GetSpellInfo(spellID)
-        local duration = trackedCC[spellName].duration
+        local spellName, _, texture = GetSpellInfo(spellID)
+        local duration = trackedCC[spellName] ~= nil and trackedCC[spellName].duration or 10
         local icon
         if #framePool > 0 then
             icon = tremove(framePool, 1)
@@ -262,9 +263,10 @@ function GetXiconDebuffModuleModule()
             for _, child in ipairs(kids) do
                 if child.destGUID then
                     for i = 1, #trackedUnitNames[child.destName .. child.destGUID] do
+                        trackedUnitNames[child.destName .. child.destGUID][i]:Hide()
+                        trackedUnitNames[child.destName .. child.destGUID][i]:SetAlpha(0)
                         trackedUnitNames[child.destName .. child.destGUID][i]:SetParent(UIParent)
                         trackedUnitNames[child.destName .. child.destGUID][i]:ClearAllPoints()
-                        trackedUnitNames[child.destName .. child.destGUID][i]:SetAlpha(0)
                         trackedUnitNames[child.destName .. child.destGUID][i]:Show()
                     end
                     break
@@ -274,8 +276,9 @@ function GetXiconDebuffModuleModule()
             if trackedUnitNames[dstName] then
                 local i = #trackedUnitNames[dstName]
                 while i > 0 do
-                    trackedUnitNames[dstName][i]:SetParent(UIParent)
+                    trackedUnitNames[dstName][i]:Hide()
                     trackedUnitNames[dstName][i]:SetAlpha(0)
+                    trackedUnitNames[dstName][i]:SetParent(UIParent)
                     trackedUnitNames[dstName][i]:SetScript("OnUpdate", nil)
                     framePool[#framePool + 1] = tremove(trackedUnitNames[dstName], i)
                     if #trackedUnitNames[dstName] == 0 then
@@ -389,6 +392,12 @@ function GetXiconDebuffModuleModule()
         local dstIsEnemy = bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) == COMBATLOG_OBJECT_REACTION_NEUTRAL or bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE
         local srcIsEnemy = bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) == COMBATLOG_OBJECT_REACTION_NEUTRAL or bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE
         local name
+        if eventType == "SPELL_SUMMON" then
+            local isGroundingTotem = tonumber(strsub(dstGUID,9,12), 16) == 5925 -- read unit id in dstGUID between 9th and 12th (hex to number)
+            if isGroundingTotem then
+                --print("Grounding Totem with guid " .. dstGUID .. " casted by " .. srcName)
+            end
+        end
         if dstIsEnemy and trackedCC[spellName] then
             --print(eventType .. " - " ..spellName)
             if eventType == "SPELL_AURA_APPLIED" or eventType == "SPELL_AURA_REFRESH" then
