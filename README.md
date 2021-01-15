@@ -1,6 +1,6 @@
 # XiconPlateBuffs TBC Addon
 
-### [v1.6.1-Beta Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.6.1-Beta/XiconPlateBuffs_v1.6.1-Beta.zip)
+### [v1.6.2-Beta Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.6.2-Beta/XiconPlateBuffs_v1.6.2-Beta.zip)
 
 #### Recommended addons to use with XiconPlateBuffs
 
@@ -15,6 +15,9 @@ This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
 ![Screenshot](../readme-media/sample.png)
 
 ### Changes
+
+v1.6.2-Beta (hotfix)
+- add ElvUI support
 
 v1.6.1-Beta (hotfix)
 - fix font beeing overwritted by nil
