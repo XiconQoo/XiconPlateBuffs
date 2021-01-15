@@ -38,6 +38,8 @@ local function getName(namePlate)
     local _, _, _, _, eman, _, _ = namePlate:GetRegions()
     if namePlate.aloftData then
         name = namePlate.aloftData.name
+    elseif ElvUI then
+        name = namePlate.UnitFrame.oldName:GetText()
     elseif sohighPlates then
         --name = namePlate.name:GetText()
         name = namePlate.oldname:GetText()
@@ -114,25 +116,33 @@ end
 -- ON_UPDATE (periodically update nameplates)
 
 ---------------------------------------------------------------------------------------------
+local regions
+local function IsNamePlate(frame)
+    if frame:GetObjectType() ~= "Frame" then return nil end
+    regions = frame:GetRegions()
+
+    if not regions then return nil end
+    if not regions.GetObjectType then return nil end
+    if not regions.GetTexture then return nil end
+
+    if regions:GetObjectType() ~= "Texture" then return nil end
+    return regions:GetTexture() == "Interface\\Tooltips\\Nameplate-Border" or nil
+end
 
 local updateInterval, lastUpdate = .03, 0
 XiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
     lastUpdate = lastUpdate + elapsed
     if lastUpdate > updateInterval then
         -- do stuff
-        if NAMEPLATES_ON then
-            local testMode = false
-            if XiconPlateBuffs.testMode then
-                testMode = true
-            end
+        if NAMEPLATES_ON or XiconPlateBuffs.testMode then
             local num = WorldFrame:GetNumChildren()
             for i = 1, num do
                 local namePlate = select(i, WorldFrame:GetChildren())
-                if namePlate:GetNumRegions() > 2 and namePlate:GetNumChildren() >= 1 then
+                if IsNamePlate(namePlate) then
                     if namePlate:IsVisible() then
                         local name = getName(namePlate)
                         namePlate.nameStr = name
-                        if testMode then
+                        if XiconPlateBuffs.testMode then
                             local dstGUID = "0x00001312031"
                             XiconDebuffModule:addDebuff(name, dstGUID, 29166, 15) -- innervate
                             XiconDebuffModule:addDebuff(name, dstGUID, 22570, 5) -- maim
