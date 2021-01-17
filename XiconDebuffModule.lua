@@ -452,16 +452,16 @@ function GetXiconDebuffModuleModule()
             spellID = tonumber(spellID)
             --print(eventType .. " - " .. msg)
             if( eventType == "SPELL_AURA_APPLIED" ) then
-                print(eventType .. " - " .. author .. " - " .. data)
+                --print(eventType .. " - " .. author .. " - " .. data)
                 XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeLeft)
             elseif( eventType == "SPELL_AURA_REFRESH" ) then
-                print(eventType .. " - " .. author .. " - " .. data)
+                --print(eventType .. " - " .. author .. " - " .. data)
                 XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeLeft)
             elseif( eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL" ) then
-                print(eventType .. " - " .. author .. " - " .. data)
+                --print(eventType .. " - " .. author .. " - " .. data)
                 removeDebuff(destName, destGUID, spellID)
             elseif eventType == "UNIT_DIED"  then
-                print(eventType .. " - " .. author .. " - " .. data)
+                --print(eventType .. " - " .. author .. " - " .. data)
                 if trackedUnitNames[destName..destGUID] then
                     hideIcons(nil, destName..destGUID)
                     trackedUnitNames[destName..destGUID] = nil
