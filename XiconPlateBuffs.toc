@@ -13,7 +13,6 @@ lib\AceDB-3.0\AceDB-3.0.xml
 lib\AceDBOptions-3.0\AceDBOptions-3.0.xml
 lib\AceGUI-3.0\AceGUI-3.0.xml
 lib\AceConfig-3.0\AceConfig-3.0.xml
-lib\LibSimpleOptions-1.0\lib.xml
 
 Constants.lua
 XiconDebuffModule.lua
