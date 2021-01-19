@@ -1,9 +1,9 @@
-function GetXiconDebuffModuleModule()
+function GetXiconDebuffModule()
     local MODULE_NAME = "XiconDebuffModule"
     local trackedUnitNames = {}
     local framePool = {}
     local trackedCC = initTrackedCrowdControl()
-    local XiconPlateBuffsDB_local
+    local XPB
     local select, tonumber, ceil = select, tonumber, ceil
 
     local COMBATLOG_OBJECT_REACTION_HOSTILE = COMBATLOG_OBJECT_REACTION_HOSTILE
@@ -12,6 +12,7 @@ function GetXiconDebuffModuleModule()
     local print = function(s)
         local str = s
         if s == nil then str = "" end
+        if type(s) == "boolean" then if s then str = "true" else str = "false" end end
         DEFAULT_CHAT_FRAME:AddMessage("|cffa0f6aa[".. MODULE_NAME .."]|r: " .. str)
     end
 
@@ -33,13 +34,9 @@ function GetXiconDebuffModuleModule()
 
     ---------------------------------------------------------------------------------------------
 
-    function XiconDebuffModule:Init(savedVariables)
-        XiconPlateBuffsDB_local = savedVariables
+    function XiconDebuffModule:Init()
+        XPB = LibStub("AceAddon-3.0"):GetAddon("XiconPlateBuffs")
         print("initialized")
-    end
-
-    function XiconDebuffModule:UpdateSavedVariables(savedVariables)
-        XiconPlateBuffsDB_local = savedVariables
     end
 
     function XiconDebuffModule:GetTrackedUnitNames()
@@ -99,20 +96,32 @@ function GetXiconDebuffModuleModule()
 
     local function removeDebuff(destName, destGUID, spellID)
         if trackedUnitNames[destName..destGUID] then
-            for i = 1, #trackedUnitNames[destName..destGUID] do
-                if trackedUnitNames[destName..destGUID][i] then
-                    if trackedUnitNames[destName..destGUID][i].spellID == spellID then
-                        trackedUnitNames[destName..destGUID][i]:Hide()
-                        trackedUnitNames[destName..destGUID][i]:SetAlpha(0)
-                        trackedUnitNames[destName..destGUID][i]:SetParent(UIParent)
-                        trackedUnitNames[destName..destGUID][i]:SetScript("OnUpdate", nil)
+            for i = 1, #trackedUnitNames[destName..destGUID].buff do
+                if trackedUnitNames[destName..destGUID].buff[i] then
+                    if trackedUnitNames[destName..destGUID].buff[i].spellID == spellID then
+                        trackedUnitNames[destName..destGUID].buff[i]:Hide()
+                        trackedUnitNames[destName..destGUID].buff[i]:SetAlpha(0)
+                        trackedUnitNames[destName..destGUID].buff[i]:SetParent(UIParent)
+                        trackedUnitNames[destName..destGUID].buff[i]:SetScript("OnUpdate", nil)
                         --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(0,0)
-                        framePool[#framePool + 1] = tremove(trackedUnitNames[destName..destGUID], i)
-                        if #trackedUnitNames[destName..destGUID] == 0 then
-                            trackedUnitNames[destName..destGUID] = nil
-                        end
+                        framePool[#framePool + 1] = tremove(trackedUnitNames[destName..destGUID].buff, i)
                     end
                 end
+            end
+            for i = 1, #trackedUnitNames[destName..destGUID].debuff do
+                if trackedUnitNames[destName..destGUID].debuff[i] then
+                    if trackedUnitNames[destName..destGUID].debuff[i].spellID == spellID then
+                        trackedUnitNames[destName..destGUID].debuff[i]:Hide()
+                        trackedUnitNames[destName..destGUID].debuff[i]:SetAlpha(0)
+                        trackedUnitNames[destName..destGUID].debuff[i]:SetParent(UIParent)
+                        trackedUnitNames[destName..destGUID].debuff[i]:SetScript("OnUpdate", nil)
+                        --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(0,0)
+                        framePool[#framePool + 1] = tremove(trackedUnitNames[destName..destGUID].debuff, i)
+                    end
+                end
+            end
+            if #trackedUnitNames[destName..destGUID].buff == 0 and #trackedUnitNames[destName..destGUID].debuff == 0 then
+                trackedUnitNames[destName..destGUID] = nil
             end
         end
     end
@@ -122,12 +131,22 @@ function GetXiconDebuffModuleModule()
         local spellName = GetSpellInfo(spellID)
         local found
         if trackedUnitNames[destName..destGUID] then
-            for i = 1, #trackedUnitNames[destName..destGUID] do
-                if trackedUnitNames[destName..destGUID][i] and trackedUnitNames[destName..destGUID][i].spellName == spellName then
+            for i = 1, #trackedUnitNames[destName..destGUID].buff do
+                if trackedUnitNames[destName..destGUID].buff[i] and trackedUnitNames[destName..destGUID].buff[i].spellName == spellName then
                     --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(GetTime(), timeLeft or trackedCC[spellName].duration)
-                    if timeLeft then trackedUnitNames[destName..destGUID][i].endtime = calcEndTime(timeLeft) end
+                    if timeLeft then trackedUnitNames[destName..destGUID].buff[i].endtime = calcEndTime(timeLeft) end
                     found = true
                     break
+                end
+            end
+            if not found then
+                for i = 1, #trackedUnitNames[destName..destGUID].debuff do
+                    if trackedUnitNames[destName..destGUID].debuff[i] and trackedUnitNames[destName..destGUID].debuff[i].spellName == spellName then
+                        --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(GetTime(), timeLeft or trackedCC[spellName].duration)
+                        if timeLeft then trackedUnitNames[destName..destGUID].debuff[i].endtime = calcEndTime(timeLeft) end
+                        found = true
+                        break
+                    end
                 end
             end
         end
@@ -139,7 +158,7 @@ function GetXiconDebuffModuleModule()
 
     function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft)
         if trackedUnitNames[destName..destGUID] == nil then
-            trackedUnitNames[destName..destGUID] = {}
+            trackedUnitNames[destName..destGUID] = { debuff = {}, buff ={}}
         end
         local spellName, _, texture = GetSpellInfo(spellID)
         local duration = trackedCC[spellName] ~= nil and trackedCC[spellName].duration or 10
@@ -152,7 +171,7 @@ function GetXiconDebuffModuleModule()
             icon.texture:SetAllPoints(icon)
             icon.cooldown = icon:CreateFontString(nil, "OVERLAY")
             icon.cooldown:SetAllPoints(icon)
-            icon.cooldown:SetFont(XiconPlateBuffsDB_local["font"], XiconPlateBuffsDB_local["fontSize"], "OUTLINE")
+            icon.cooldown:SetFont(XPB.db.profile[trackedCC[GetSpellInfo(spellID)].track].font, XPB.db.profile[trackedCC[GetSpellInfo(spellID)].track].fontSize, "OUTLINE")
         end
 
         icon:SetParent(UIParent)
@@ -169,6 +188,7 @@ function GetXiconDebuffModuleModule()
         icon.spellID = spellID
         icon.destGUID = destGUID
         icon.destName = destName
+        icon.trackType = trackedCC[GetSpellInfo(spellID)].track
 
         local iconTimer = function(iconFrame, elapsed)
 
@@ -203,53 +223,100 @@ function GetXiconDebuffModuleModule()
             end
         end
 
-        tinsert(trackedUnitNames[destName..destGUID], icon)
+        tinsert(trackedUnitNames[destName..destGUID][icon.trackType], icon)
         icon:SetScript("OnUpdate", iconTimer)
         icon:Show()
         --sorting
-        if XiconPlateBuffsDB_local["sorting"] == "none" then
+        if XPB.db.profile[icon.trackType].sorting == "none" then
             return
-        end
-        if XiconPlateBuffsDB_local["sorting"] == "ascending" then
-            table.sort(trackedUnitNames[destName..destGUID], function(iconA,iconB) return iconA.endtime < iconB.endtime end)
-        elseif XiconPlateBuffsDB_local["sorting"] == "descending" then
-            table.sort(trackedUnitNames[destName..destGUID], function(iconA,iconB) return iconA.endtime > iconB.endtime end)
+        elseif XPB.db.profile[icon.trackType].sorting == "ascending" then
+            table.sort(trackedUnitNames[destName..destGUID][icon.trackType], function(iconA,iconB) return iconA.endtime < iconB.endtime end)
+        elseif XPB.db.profile[icon.trackType].sorting == "descending" then
+            table.sort(trackedUnitNames[destName..destGUID][icon.trackType], function(iconA,iconB) return iconA.endtime > iconB.endtime end)
         end
     end
 
 
-    local function addIcons(dstName, namePlate)
-        local num = #trackedUnitNames[dstName]
-        local size, fontSize, width
-        if not width then
-            width = namePlate:GetWidth()
-        end
-        if XiconPlateBuffsDB_local["responsive"] and num * XiconPlateBuffsDB_local["iconSize"] + (num * 2 - 2) > width then
-            size = (width - (num * 2 - 2)) / num
-            if XiconPlateBuffsDB_local["fontSize"] < size/2 then
-                fontSize = XiconPlateBuffsDB_local["fontSize"]
+    local function addIcons(dstName, namePlate, force)
+        local numBuffs, numDebuffs = #trackedUnitNames[dstName].buff, #trackedUnitNames[dstName].debuff
+        local sizeBuff, sizeDebuff, fontSizeBuff, fontSizeDebuff
+        if XPB.db.profile.buff.responsive and numBuffs > 0 and numBuffs * XPB.db.profile.buff["iconSize"] + (numBuffs * 2 - 2) > XPB.db.profile.buff.responsiveMax then
+            sizeBuff = (XPB.db.profile.buff.responsiveMax - (numBuffs * 2 - 2)) / numBuffs
+            if XPB.db.profile.buff.fontSize < sizeBuff/2 then
+                fontSizeBuff = XPB.db.profile.buff.fontSize
             else
-                fontSize = size / 2
+                fontSizeBuff = sizeBuff / 2
             end
         else
-            fontSize = XiconPlateBuffsDB_local["fontSize"]
-            size = XiconPlateBuffsDB_local["iconSize"]
+            fontSizeBuff = XPB.db.profile.buff.fontSize
+            sizeBuff = XPB.db.profile.buff.iconSize
         end
-        for i = 1, #trackedUnitNames[dstName] do
-            trackedUnitNames[dstName][i]:SetParent(namePlate)
-            trackedUnitNames[dstName][i]:SetFrameStrata(force and "LOW" or "BACKGROUND")
-            trackedUnitNames[dstName][i]:ClearAllPoints()
-            trackedUnitNames[dstName][i]:SetWidth(size)
-            trackedUnitNames[dstName][i]:SetHeight(size)
-            trackedUnitNames[dstName][i]:SetAlpha(XiconPlateBuffsDB_local["alpha"])
-            trackedUnitNames[dstName][i].cooldown:SetAlpha(XiconPlateBuffsDB_local["alpha"])
-            trackedUnitNames[dstName][i].cooldown:SetFont(XiconPlateBuffsDB_local["font"], fontSize, "OUTLINE")
-            if i == 1 then
-                trackedUnitNames[dstName][i]:SetPoint("TOPLEFT", namePlate, XiconPlateBuffsDB_local["xOffset"], size + XiconPlateBuffsDB_local["yOffset"])
+        if XPB.db.profile.debuff.responsive and numDebuffs > 0 and numDebuffs * XPB.db.profile.debuff["iconSize"] + (numDebuffs * 2 - 2) > XPB.db.profile.debuff.responsiveMax then
+            sizeDebuff = (XPB.db.profile.debuff.responsiveMax - (numDebuffs * 2 - 2)) / numDebuffs
+            if XPB.db.profile.debuff.fontSize < sizeDebuff/2 then
+                fontSizeDebuff = XPB.db.profile.debuff.fontSize
             else
-                trackedUnitNames[dstName][i]:SetPoint("TOPLEFT", trackedUnitNames[dstName][i - 1], size + 2, 0)
+                fontSizeDebuff = sizeDebuff / 2
             end
-            trackedUnitNames[dstName][i]:Show()
+        else
+            fontSizeDebuff = XPB.db.profile.debuff.fontSize
+            sizeDebuff = XPB.db.profile.debuff.iconSize
+        end
+
+        for i = 1, #trackedUnitNames[dstName].debuff do
+            trackedUnitNames[dstName].debuff[i]:SetParent(namePlate)
+            trackedUnitNames[dstName].debuff[i]:SetFrameStrata(force and "LOW" or "BACKGROUND")
+            trackedUnitNames[dstName].debuff[i]:ClearAllPoints()
+            trackedUnitNames[dstName].debuff[i]:SetWidth(sizeDebuff)
+            trackedUnitNames[dstName].debuff[i]:SetHeight(sizeDebuff)
+            trackedUnitNames[dstName].debuff[i]:SetAlpha(XPB.db.profile.debuff.alpha)
+            trackedUnitNames[dstName].debuff[i].cooldown:SetAlpha(XPB.db.profile.debuff.alpha)
+            trackedUnitNames[dstName].debuff[i].cooldown:SetFont(XPB.db.profile.debuff.font, fontSizeDebuff, "OUTLINE")
+            if i == 1 then
+                trackedUnitNames[dstName].debuff[i]:SetPoint(XPB.db.profile.debuff.anchor.self,
+                        namePlate, XPB.db.profile.debuff.anchor.nameplate,
+                        XPB.db.profile.debuff.xOffset,
+                        XPB.db.profile.debuff.yOffset)
+            else
+                trackedUnitNames[dstName].debuff[i]:SetPoint(XPB.db.profile.debuff.growDirection.self,
+                        trackedUnitNames[dstName].debuff[i - 1], XPB.db.profile.debuff.growDirection.icon,
+                        0, 0)
+            end
+            trackedUnitNames[dstName].debuff[i]:Show()
+        end
+
+        for i = 1, #trackedUnitNames[dstName].buff do
+            trackedUnitNames[dstName].buff[i]:SetParent(namePlate)
+            trackedUnitNames[dstName].buff[i]:SetFrameStrata(force and "LOW" or "BACKGROUND")
+            trackedUnitNames[dstName].buff[i]:ClearAllPoints()
+            trackedUnitNames[dstName].buff[i]:SetWidth(sizeBuff)
+            trackedUnitNames[dstName].buff[i]:SetHeight(sizeBuff)
+            trackedUnitNames[dstName].buff[i]:SetAlpha(XPB.db.profile.buff.alpha)
+            trackedUnitNames[dstName].buff[i].cooldown:SetAlpha(XPB.db.profile.buff.alpha)
+            trackedUnitNames[dstName].buff[i].cooldown:SetFont(XPB.db.profile.buff.font, fontSizeBuff, "OUTLINE")
+            if i == 1 then
+                if XPB.db.profile.attachBuffsToDebuffs then
+                    if #trackedUnitNames[dstName].debuff > 0 then
+                        trackedUnitNames[dstName].buff[i]:SetPoint(XPB.db.profile.buff.anchor.self,
+                                trackedUnitNames[dstName].debuff[1], XPB.db.profile.buff.anchor.nameplate,
+                                XPB.db.profile.buff.xOffset,
+                                XPB.db.profile.buff.yOffset)
+                    else
+                        trackedUnitNames[dstName].buff[i]:SetPoint(XPB.db.profile.debuff.anchor.self,
+                                namePlate, XPB.db.profile.debuff.anchor.nameplate,
+                                XPB.db.profile.debuff.xOffset,
+                                XPB.db.profile.debuff.yOffset)
+                    end
+                else
+                    trackedUnitNames[dstName].buff[i]:SetPoint(XPB.db.profile.buff.anchor.self,
+                            namePlate, XPB.db.profile.buff.anchor.nameplate,
+                            XPB.db.profile.buff.xOffset,
+                            XPB.db.profile.buff.yOffset)
+                end
+            else
+                trackedUnitNames[dstName].buff[i]:SetPoint(XPB.db.profile.buff.growDirection.self, trackedUnitNames[dstName].buff[i - 1], XPB.db.profile.buff.growDirection.icon, 0, 0)
+            end
+            trackedUnitNames[dstName].buff[i]:Show()
         end
     end
 
@@ -262,29 +329,45 @@ function GetXiconDebuffModuleModule()
             local kids = { namePlate:GetChildren() };
             for _, child in ipairs(kids) do
                 if child.destGUID then
-                    for i = 1, #trackedUnitNames[child.destName .. child.destGUID] do
-                        trackedUnitNames[child.destName .. child.destGUID][i]:Hide()
-                        trackedUnitNames[child.destName .. child.destGUID][i]:SetAlpha(0)
-                        trackedUnitNames[child.destName .. child.destGUID][i]:SetParent(UIParent)
-                        trackedUnitNames[child.destName .. child.destGUID][i]:ClearAllPoints()
-                        trackedUnitNames[child.destName .. child.destGUID][i]:Show()
+                    for i = 1, #trackedUnitNames[child.destName .. child.destGUID].buff do
+                        trackedUnitNames[child.destName .. child.destGUID].buff[i]:Hide()
+                        trackedUnitNames[child.destName .. child.destGUID].buff[i]:SetAlpha(0)
+                        trackedUnitNames[child.destName .. child.destGUID].buff[i]:SetParent(UIParent)
+                        trackedUnitNames[child.destName .. child.destGUID].buff[i]:ClearAllPoints()
+                        trackedUnitNames[child.destName .. child.destGUID].buff[i]:Show()
+                    end
+                    for i = 1, #trackedUnitNames[child.destName .. child.destGUID].debuff do
+                        trackedUnitNames[child.destName .. child.destGUID].debuff[i]:Hide()
+                        trackedUnitNames[child.destName .. child.destGUID].debuff[i]:SetAlpha(0)
+                        trackedUnitNames[child.destName .. child.destGUID].debuff[i]:SetParent(UIParent)
+                        trackedUnitNames[child.destName .. child.destGUID].debuff[i]:ClearAllPoints()
+                        trackedUnitNames[child.destName .. child.destGUID].debuff[i]:Show()
                     end
                     break
                 end
             end
         elseif not namePlate and dstName then -- UNIT_DIED
             if trackedUnitNames[dstName] then
-                local i = #trackedUnitNames[dstName]
+                local i = #trackedUnitNames[dstName].buff
                 while i > 0 do
-                    trackedUnitNames[dstName][i]:Hide()
-                    trackedUnitNames[dstName][i]:SetAlpha(0)
-                    trackedUnitNames[dstName][i]:SetParent(UIParent)
-                    trackedUnitNames[dstName][i]:SetScript("OnUpdate", nil)
-                    framePool[#framePool + 1] = tremove(trackedUnitNames[dstName], i)
-                    if #trackedUnitNames[dstName] == 0 then
-                        trackedUnitNames[dstName] = nil
-                    end
+                    trackedUnitNames[dstName].buff[i]:Hide()
+                    trackedUnitNames[dstName].buff[i]:SetAlpha(0)
+                    trackedUnitNames[dstName].buff[i]:SetParent(UIParent)
+                    trackedUnitNames[dstName].buff[i]:SetScript("OnUpdate", nil)
+                    framePool[#framePool + 1] = tremove(trackedUnitNames[dstName].buff, i)
                     i = i - 1
+                end
+                i = #trackedUnitNames[dstName].debuff
+                while i > 0 do
+                    trackedUnitNames[dstName].debuff[i]:Hide()
+                    trackedUnitNames[dstName].debuff[i]:SetAlpha(0)
+                    trackedUnitNames[dstName].debuff[i]:SetParent(UIParent)
+                    trackedUnitNames[dstName].debuff[i]:SetScript("OnUpdate", nil)
+                    framePool[#framePool + 1] = tremove(trackedUnitNames[dstName].debuff, i)
+                    i = i - 1
+                end
+                if #trackedUnitNames[dstName].buff == 0 and #trackedUnitNames[dstName].debuff == 0 then
+                    trackedUnitNames[dstName] = nil
                 end
             end
         end
@@ -320,7 +403,7 @@ function GetXiconDebuffModuleModule()
 
     local function updateDebuffsOnNameplate(name, namePlate, force)
         if trackedUnitNames[name] then
-            addIcons(name, namePlate)
+            addIcons(name, namePlate, force)
             if not namePlate:GetScript("OnHide") then
                 namePlate:SetScript("OnHide", hideIcons)
                 namePlate.xiconPlateHooked = true
@@ -344,14 +427,14 @@ function GetXiconDebuffModuleModule()
             -- find unit with unknown guid, same name and hidden active debuffs in trackedUnitNames
             for k,v in pairs(trackedUnitNames) do
                 local splitStr = splitName(k)
-                if namePlate.XiconGUID and v[1].destGUID == namePlate.XiconGUID() then -- we definitely know this nameplate (hovered / targeted before... OnHide will clear namePlate.XiconGUID
+                if namePlate.XiconGUID and ((#v.debuff > 0 and v.debuff[1].destGUID == namePlate.XiconGUID()) or (#v.buff > 0 and v.buff[1].destGUID == namePlate.XiconGUID())) then -- we definitely know this nameplate (hovered / targeted before... OnHide will clear namePlate.XiconGUID
                     name = k
                     break
-                elseif splitStr[1] == dstName and #v > 0 and v[1]:GetParent() == UIParent and v[1].destName == dstName then
+                elseif splitStr[1] == dstName and ((#v.debuff > 0 and v.debuff[1]:GetParent() == UIParent and v.debuff[1].destName == dstName) or (#v.buff > 0 and v.buff[1]:GetParent() == UIParent and v.buff[1].destName == dstName)) then
                     -- wild guess in pve, accurate in pvp
                     name = k
                     break
-                elseif splitStr[1] == dstName and #v > 0 and namePlate.xiconPlateActive and v[1]:GetParent() == namePlate then
+                elseif splitStr[1] == dstName and namePlate.xiconPlateActive and ((#v.debuff > 0 and v.debuff[1]:GetParent() == namePlate) or (#v.buff > 0 and v.buff[1]:GetParent() == namePlate)) then
                     -- still wild guess but active, we update here nonetheless, accurate in pvp
                     name = k
                 end

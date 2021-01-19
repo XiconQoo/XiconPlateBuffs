@@ -56,14 +56,14 @@ function initTrackedCrowdControl()
             id = 22570,
         },
 
-        --[[
+
         -- Innervate
         [GetSpellInfo(29166)] = {
             track = "buff",
             duration = 20,
             priority = 10,
             id = 29166,
-        },--]]
+        },
 
 
         -- Freezing Trap Effect
@@ -108,14 +108,14 @@ function initTrackedCrowdControl()
             priority = 40,
             id = 19577,
         },
-        --[[
+
         -- The Beast Within
         [GetSpellInfo(34692)] = {
             track = "buff",
             duration = 18,
             priority = 20,
             id = 34692,
-        },--]]
+        },
 
 
         -- Polymorph
@@ -192,7 +192,7 @@ function initTrackedCrowdControl()
             incapacite = true,
             id = 20066,
         },
-        --[[
+
         -- Blessing of Protection
         [GetSpellInfo(10278)] = {
             track = "buff",
@@ -213,7 +213,6 @@ function initTrackedCrowdControl()
             priority = 20,
             id = 642,
         },
-        --]]
 
         -- Psychic Scream
         [GetSpellInfo(8122)] = {
@@ -249,15 +248,7 @@ function initTrackedCrowdControl()
             magic = true,
             id = 15487,
         },
-        --[[
-        --Feiry Fire
-        [GetSpellInfo(26993)] = {
-            track = "debuff",
-            duration = 40,
-            priority = 15,
-            magic = true,
-            id = 26993,
-        },
+
         -- Pain Suppression
         [GetSpellInfo(33206)] = {
             track = "buff",
@@ -265,8 +256,6 @@ function initTrackedCrowdControl()
             priority = 10,
             id = 33206,
         },
-        --]]
-
 
         -- Sap
         [GetSpellInfo(6770)] = {
@@ -322,7 +311,7 @@ function initTrackedCrowdControl()
             priority = 15,
             id = 1330,
         },
-        --[[
+
         -- Cloak of Shadows
         [GetSpellInfo(31224)] = {
             track = "buff",
@@ -330,8 +319,6 @@ function initTrackedCrowdControl()
             priority = 20,
             id = 31224,
         },
-        --]]
-
 
         -- Fear
         [GetSpellInfo(5782)] = {
@@ -422,7 +409,6 @@ function initTrackedCrowdControl()
             id = 25274,
         },
 
-        --[[
         -- Spell Reflection
         [GetSpellInfo(23920)] = {
             track = "buff",
@@ -430,7 +416,6 @@ function initTrackedCrowdControl()
             priority = 10,
             id = 23920,
         },
-        --]]
 
 
         -- War Stomp
@@ -450,32 +435,3 @@ function initTrackedCrowdControl()
         },
     }
 end
-
-XiconPlateBuffs_Totems = {
-    ["Disease Cleansing Totem"] = "spell_nature_diseasecleansingtotem",
-    ["Earth Elemental Totem"] = "spell_nature_earthelemental_totem",
-    ["Earthbind Totem"] = "spell_nature_strengthofearthtotem02",
-    ["Fire Elemental Totem"] = "spell_fire_elemental_totem",
-    ["Fire Nova Totem"] = "spell_fire_sealoffire",
-    ["Fire Resistance Totem"] = "spell_fireresistancetotem_01",
-    ["Flametongue Totem"] = "spell_nature_guardianward",
-    ["Frost Resistance Totem"] = "spell_frostresistancetotem_01",
-    ["Grace of Air Totem"] = "spell_nature_invisibilitytotem",
-    ["Grounding Totem"] = "spell_nature_groundingtotem",
-    ["Healing Stream Totem"] = "Inv_spear_04",
-    ["Magma Totem"] = "spell_fire_selfdestruct",
-    ["Mana Spring Totem"] = "spell_nature_manaregentotem",
-    ["Mana Tide Totem"] = "spell_frost_summonwaterelemental",
-    ["Nature Resistance Totem"] = "spell_nature_natureresistancetotem",
-    ["Poison Cleansing Totem"] = "spell_nature_poisoncleansingtotem",
-    ["Searing Totem"] = "spell_fire_searingtotem",
-    ["Sentry Totem"] = "spell_nature_removecurse",
-    ["Stoneclaw Totem"] = "spell_nature_stoneclawtotem",
-    ["Stoneskin Totem"] = "spell_nature_stoneskintotem",
-    ["Strength of Earth Totem"] = "spell_nature_earthbindtotem",
-    ["Totem of Wrath"] = "spell_fire_totemofwrath",
-    ["Tremor Totem"] = "spell_nature_tremortotem",
-    ["Windfury Totem"] = "spell_nature_windfury",
-    ["Windwall Totem"] = "spell_nature_earthbind",
-    ["Wrath of Air Totem"] = "spell_nature_slowingtotem",
-}
