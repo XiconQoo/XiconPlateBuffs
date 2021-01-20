@@ -1,6 +1,6 @@
 # XiconPlateBuffs TBC Addon
 
-### [v1.6.3-Beta Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.6.3-Beta/XiconPlateBuffs_v1.6.3-Beta.zip)
+### [v1.6.4-Beta Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.6.4-Beta/XiconPlateBuffs_v1.6.4-Beta.zip)
 
 #### Recommended addons to use with XiconPlateBuffs
 
@@ -15,6 +15,9 @@ This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
 ![Screenshot](../readme-media/sample.png)
 
 ### Changes
+
+v1.6.4-Beta (hotfix)
+- revert isNameplate function
 
 v1.6.3-Beta (hotfix)
 - delete debug output from development
