@@ -6,6 +6,101 @@ local XPB = LibStub("AceAddon-3.0"):GetAddon("XiconPlateBuffs")
 
 ---------------------------------------------------------------------------------------------
 
+local function getSpells()
+    local spells = {
+        ckeckAll = {
+            order = 1,
+            width = "0.7",
+            name = "Check All",
+            type = "execute",
+            func = function(info)
+                for k,v in pairs(XPB.db.profile.trackedCC) do
+                    XPB.db.profile.trackedCC[k] = true
+                end
+            end,
+        },
+        uncheckAll = {
+            order = 2,
+            width = "0.7",
+            name = "Unheck All",
+            type = "execute",
+            func = function(info)
+                for k,v in pairs(XPB.db.profile.trackedCC) do
+                    XPB.db.profile.trackedCC[k] = false
+                end
+            end,
+        },
+        debuffs = {
+            order = 3,
+            type = "group",
+            name = "Debuffs",
+            args = {},
+        },
+        buffs = {
+            order = 4,
+            type = "group",
+            name = "Buffs",
+            args = {},
+        },
+    }
+    local allSpells = initTrackedCrowdControl()
+    local buffs, debuffs = {},{}
+    for k,v in pairs(allSpells) do
+        if v.track == "debuff" then tinsert(debuffs, v) end
+        if v.track == "buff" then tinsert(buffs, v) end
+    end
+    table.sort(buffs, function(a,b)
+        local spellA = GetSpellInfo(a.id)
+        local spellB = GetSpellInfo(b.id)
+        return spellA:upper() < spellB:upper()
+    end)
+    table.sort(debuffs, function(a,b)
+        local spellA = GetSpellInfo(a.id)
+        local spellB = GetSpellInfo(b.id)
+        return spellA:upper() < spellB:upper()
+    end)
+    for i=1, #debuffs do
+        local spellName, _, texture = GetSpellInfo(debuffs[i].id)
+        spells.debuffs.args["debuff"..debuffs[i].id] = {
+            order = i,
+            --name = spellName,
+            type = "toggle",
+            icon = texture,
+            arg = debuffs[i].id,
+            name = function()
+                return format("|T%s:20|t %s", texture, spellName)
+            end
+        }
+    end
+    for i=1, #buffs do
+        local spellName, _, texture = GetSpellInfo(buffs[i].id)
+        spells.buffs.args["buff"..buffs[i].id] = {
+            order = i,
+            --name = spellName,
+            type = "toggle",
+            icon = texture,
+            arg = buffs[i].id,
+            name = function()
+                return format("|T%s:20|t %s", texture, spellName)
+            end
+        }
+    end
+    return spells
+end
+
+function XPB:GetTrackedCC()
+    local trackedCC = {}
+    local allSpells = initTrackedCrowdControl()
+    for k,v in pairs(self.db.profile.trackedCC) do
+        if v then
+            local spellId = string.match(k, "(%d+)")
+            local spellName = GetSpellInfo(spellId)
+            trackedCC[spellName] = allSpells[spellName]
+        end
+    end
+    return trackedCC
+end
+
 function XPB:CreateOptions()
     self.options = {
         name = "XiconPlateBuffs",
@@ -335,7 +430,15 @@ function XPB:CreateOptions()
                 type = "group",
                 order = 11,
                 childGroups = "tab",
-                args = {}
+                args = getSpells(),
+                set = function(info, state)
+                    local option = info[#info]
+                    self.db.profile.trackedCC[option] = state
+                end,
+                get = function(info)
+                    local option = info[#info]
+                    return self.db.profile.trackedCC[option]
+                end,
             }
         },
     }

@@ -205,6 +205,7 @@ function initTrackedCrowdControl()
             track = "buff",
             duration = 14,
             priority = 10,
+            id = 1044,
         },
         -- Divine Shield
         [GetSpellInfo(642)] = {

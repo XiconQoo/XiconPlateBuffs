@@ -35,7 +35,7 @@ end
 
 local function getName(namePlate)
     local name
-    local _, _, _, _, eman, _, _ = namePlate:GetRegions()
+    local _, _, _, _, nameRegion1, _, nameRegion2 = namePlate:GetRegions()
     if namePlate.aloftData then
         name = namePlate.aloftData.name
     elseif ElvUI then
@@ -43,11 +43,10 @@ local function getName(namePlate)
     elseif sohighPlates then
         --name = namePlate.name:GetText()
         name = namePlate.oldname:GetText()
-    elseif strmatch(eman:GetText(), "%d") then
-        local _, _, _, _, _, nameRegion = namePlate:GetRegions()
-        name = nameRegion:GetText()
+    elseif strmatch(nameRegion1:GetText(), "%d") then
+        name = nameRegion2:GetText()
     else
-        name = eman:GetText()
+        name = nameRegion1:GetText()
     end
     return name
 end
@@ -62,12 +61,17 @@ local events = {} -- store event functions to be assigned to reputation frame
 
 function events:ADDON_LOADED(...)
     if select(1, ...) == ADDON_NAME then
+        local trackedCC = initTrackedCrowdControl()
+        local defaultTrackedCC = {}
+        for k,v in pairs(trackedCC) do
+            defaultTrackedCC[v.track..v.id] = true
+        end
         local defaults = {
             profile = {
                 debuff = {
                     iconSize = 40,
                     fontSize = 15,
-                    responsive = false,
+                    responsive = true,
                     responsiveMax = 120,
                     font = "Fonts\\FRIZQT__.ttf",
                     yOffset = 5,
@@ -80,17 +84,18 @@ function events:ADDON_LOADED(...)
                 buff = {
                     iconSize = 40,
                     fontSize = 15,
-                    responsive = false,
+                    responsive = true,
                     responsiveMax = 120,
                     font = "Fonts\\FRIZQT__.ttf",
-                    yOffset = 5,
-                    xOffset = -10,
+                    yOffset = 0,
+                    xOffset = 0,
                     alpha = 1.0,
                     sorting = "ascending",
                     anchor = { self = "BOTTOMLEFT", nameplate = "TOPLEFT" },
                     growDirection = { self = "LEFT", icon = "RIGHT" },
                 },
                 attachBuffsToDebuffs = true,
+                trackedCC = defaultTrackedCC
             }
         }
         XiconPlateBuffs.db = LibStub("AceDB-3.0"):New("XiconPlateBuffsDB", defaults)
@@ -133,7 +138,7 @@ local function IsNamePlate(frame)
     return regions:GetTexture() == "Interface\\Tooltips\\Nameplate-Border" or nil
 end
 
-local updateInterval, lastUpdate = .03, 0
+local updateInterval, lastUpdate = .01, 0
 XiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
     lastUpdate = lastUpdate + elapsed
     if lastUpdate > updateInterval then
@@ -147,7 +152,6 @@ XiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
                         local name = getName(namePlate)
                         namePlate.nameStr = name
                         if XiconPlateBuffs.testMode then
-                            print(name)
                             local dstGUID = "0x00001312031"
                             XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 29166, 15) -- innervate
                             XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 22570, 5) -- maim

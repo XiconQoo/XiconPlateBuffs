@@ -383,7 +383,18 @@ function GetXiconDebuffModule()
             for i = 1, 40 do
                 local spellName,rank,icon,count,dtype,duration,timeLeft,isMine = UnitDebuff(unit, i)
                 if not spellName then break end
-                if trackedCC[spellName] and timeLeft then
+                if XPB:GetTrackedCC()[spellName] and timeLeft then
+                    --update buff durations
+                    XiconDebuffModule:addOrRefreshDebuff(unitName, unitGUID, trackedCC[spellName].id, timeLeft, true)
+                    if timeLeft > 0.5 then
+                        XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, unitName, unitGUID, duration, timeLeft, "enemy"))
+                    end
+                end
+            end
+            for i = 1, 40 do
+                local spellName, _, _, _, duration, timeLeft,isMine,isStealable,shouldConsolidate,spellId = UnitBuff(unit, i)
+                if not spellName then break end
+                if XPB:GetTrackedCC()[spellName] and timeLeft then
                     --update buff durations
                     XiconDebuffModule:addOrRefreshDebuff(unitName, unitGUID, trackedCC[spellName].id, timeLeft, true)
                     if timeLeft > 0.5 then
@@ -473,7 +484,7 @@ function GetXiconDebuffModule()
     function events:COMBAT_LOG_EVENT_UNFILTERED(...)
         local _, eventType, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellID, spellName, spellSchool, auraType, stackCount = select(1, ...)
         local dstIsEnemy = bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) == COMBATLOG_OBJECT_REACTION_NEUTRAL or bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE
-        local srcIsEnemy = bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) == COMBATLOG_OBJECT_REACTION_NEUTRAL or bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE
+        local srcIsEnemy = bit.band(srcFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) == COMBATLOG_OBJECT_REACTION_NEUTRAL or bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE
         local name
         if eventType == "SPELL_SUMMON" then
             local isGroundingTotem = tonumber(strsub(dstGUID,9,12), 16) == 5925 -- read unit id in dstGUID between 9th and 12th (hex to number)
@@ -481,7 +492,8 @@ function GetXiconDebuffModule()
                 --print("Grounding Totem with guid " .. dstGUID .. " casted by " .. srcName)
             end
         end
-        if dstIsEnemy and trackedCC[spellName] then
+        --print(eventType .. " - " .. (dstName and dstName.." dst" or srcName and srcName.." src"))
+        if dstIsEnemy and XPB:GetTrackedCC()[spellName] then
             --print(eventType .. " - " ..spellName)
             if eventType == "SPELL_AURA_APPLIED" or eventType == "SPELL_AURA_REFRESH" then
                 --print(eventType .. " - " .. spellName .. " - " .. spellID)
@@ -491,15 +503,15 @@ function GetXiconDebuffModule()
                 updateDebuffsOnUnitGUID(dstGUID)
             end
         end
-        if (srcIsEnemy or dstIsEnemy) and trackedCC[spellName] then
+        if (srcIsEnemy or dstIsEnemy) and XPB:GetTrackedCC()[spellName] then
             if (eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL") then
-                --print(eventType .. " - " .. spellName .. " - " .. spellID)
+                --print(eventType .. " - " .. spellName .. " - " .. dstName .. (dstIsEnemy and " - dst" or srcIsEnemy and " - src"))
                 name = string.gsub(dstName, "%s+", "")
                 removeDebuff(name, dstGUID, spellID)
                 XiconDebuffModule:SendMessage(string.format(eventType .. ":%s,%s,%s,%s,%s,%s,%s", spellID, spellName, name, dstGUID, "nil", "nil", "enemy"))
             end
         end
-        if srcIsEnemy and eventType == "UNIT_DIED" then
+        if dstIsEnemy and eventType == "UNIT_DIED" then
             name = string.gsub(dstName or srcName, "%s+", "")
             if trackedUnitNames[name..dstGUID] then
                 hideIcons(nil, name..dstGUID)
@@ -543,7 +555,7 @@ function GetXiconDebuffModule()
             elseif( eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL" ) then
                 --print(eventType .. " - " .. author .. " - " .. data)
                 removeDebuff(destName, destGUID, spellID)
-            elseif eventType == "UNIT_DIED"  then
+            elseif eventType == "UNIT_DIED" then
                 --print(eventType .. " - " .. author .. " - " .. data)
                 if trackedUnitNames[destName..destGUID] then
                     hideIcons(nil, destName..destGUID)
