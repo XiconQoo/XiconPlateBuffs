@@ -6,6 +6,86 @@ local XPB = LibStub("AceAddon-3.0"):GetAddon("XiconPlateBuffs")
 
 ---------------------------------------------------------------------------------------------
 
+local customSpell = { id = nil, duration = nil, track = nil }
+local errorMessage = ""
+local customSpells = {{ id = 1459, duration = 50, track = "buff" }}
+
+local function getCustomSpells()
+    print("getCustomSpells")
+    local spellList = {}
+    table.sort(customSpells, function (a,b)
+        return GetSpellInfo(a.id) < GetSpellInfo(b.id)
+    end)
+    local order = 1
+    for i=1, #customSpells do
+        local spellName,_,texture = GetSpellInfo(customSpells[i].id)
+        spellList["customSpell" .. customSpells[i].id] = {
+            order = i,
+            name = "",
+            inline = true,
+            type = "group",
+            --childGroups = "tab",
+            args = {
+                desc = {
+                    order = 1,
+                    name = spellName,
+                    type = "execute",
+                    image = texture,
+                    imageHeight = 15,
+                    imageWidth = 15,
+                    imagePoint = {self = "RIGHT", relative = "LEFT", x = 0, y = 0},
+                    --imageCoords = {1,0,0,0},
+                    --width = "1.2",
+                    --disabled = function () return true end,
+                    desc = format("Duration: %ds", customSpells[i].duration),
+                },
+                del = {
+                    order = 2,
+                    type = "execute",
+                    name = "Del",
+                    width = "0.35",
+                    func = function() end,
+                },
+                edit = {
+                    order = 3,
+                    type = "execute",
+                    name = "Edit",
+                    width = "0.35",
+                    func = function() end,
+                }
+            }
+        }
+        --[[spellList["customSpell" .. customSpells[i].id] = {
+            order = order,
+            name = spellName,
+            type = "description",
+            image = texture,
+            imageHeight = 15,
+            imageWidth = 15,
+            width = "1.2",
+            desc = format("Duration: %ds", customSpells[i].duration),
+        }
+        order = order + 1
+        spellList["customSpell" .. customSpells[i].id.."delete"] = {
+            order = order,
+            type = "execute",
+            name = "Del",
+            width = "0.35",
+            func = function() end,
+        }
+        order = order + 1
+        spellList["customSpell" .. customSpells[i].id.."edit"] = {
+            order = order,
+            type = "execute",
+            name = "Edit",
+            width = "0.35",
+            func = function() end,
+        }
+        order = order + 1--]]
+    end
+    return spellList
+end
+
 local function getSpells()
     local spells = {
         ckeckAll = {
@@ -22,7 +102,7 @@ local function getSpells()
         uncheckAll = {
             order = 2,
             width = "0.7",
-            name = "Unheck All",
+            name = "Uncheck All",
             type = "execute",
             func = function(info)
                 for k,v in pairs(XPB.db.profile.trackedCC) do
@@ -63,26 +143,24 @@ local function getSpells()
         local spellName, _, texture = GetSpellInfo(debuffs[i].id)
         spells.debuffs.args["debuff"..debuffs[i].id] = {
             order = i,
-            --name = spellName,
+            name = spellName,
             type = "toggle",
-            icon = texture,
+            image = texture,
+            width = "2",
+            desc = format("Duration: %ds", debuffs[i].duration),
             arg = debuffs[i].id,
-            name = function()
-                return format("|T%s:20|t %s", texture, spellName)
-            end
         }
     end
     for i=1, #buffs do
         local spellName, _, texture = GetSpellInfo(buffs[i].id)
         spells.buffs.args["buff"..buffs[i].id] = {
             order = i,
-            --name = spellName,
+            name = spellName,
             type = "toggle",
-            icon = texture,
+            image = texture,
+            width = "2",
+            desc = format("Duration: %ds", buffs[i].duration),
             arg = buffs[i].id,
-            name = function()
-                return format("|T%s:20|t %s", texture, spellName)
-            end
         }
     end
     return spells
@@ -439,6 +517,90 @@ function XPB:CreateOptions()
                     local option = info[#info]
                     return self.db.profile.trackedCC[option]
                 end,
+            },
+            addCustomSpell = {
+                name = "Custom Spell",
+                type = "group",
+                childGroups = "tab",
+                order = 12,
+                args = {
+                    errorMessage = {
+                        --hidden = function(info) return not customSpell.id end,
+                        type = "description",
+                        image = "",
+                        imageWidth = 20,
+                        imageHeight = 20,
+                        name = "",
+                        width = "2",
+                        fontSize = "large",
+                        order = 1
+                    },
+                    spellId = {
+                        name = "SpellID",
+                        type = "input",
+                        order = 2,
+                        width = "0.7",
+                        pattern = "%d+",
+                        validate = function(info, value)
+                            local spellName,_,texture = GetSpellInfo(value)
+                            if not spellName then
+                                customSpell.id = nil
+                                self.options.args.addCustomSpell.args.errorMessage.name = "No spell info found for SpellID =  " .. value
+                                self.options.args.addCustomSpell.args.errorMessage.image = "Interface\\Icons\\INV_Misc_QuestionMark",
+                                LibStub("AceConfigRegistry-3.0"):NotifyChange("XiconPlateBuffs")
+                                return errorMessage
+                            else
+                                --self.options.args.addCustomSpell.args.errorMessage.desc =  format("|T%s:20|t %s", texture, spellName)
+                                self.options.args.addCustomSpell.args.errorMessage.name = spellName
+                                self.options.args.addCustomSpell.args.errorMessage.image = texture
+                                LibStub("AceConfigRegistry-3.0"):NotifyChange("XiconPlateBuffs")
+                                return true
+                            end
+                        end,
+                        get = function(info) return customSpell.id end,
+                        set = function(info, value) customSpell.id = value end,
+                    },
+                    duration = {
+                        name = "Duration",
+                        hidden = function(info) return not customSpell.id end,
+                        type = "input",
+                        order = 3,
+                        width = "0.7",
+                        pattern = "%d+",
+                        get = function(info) return customSpell.duration end,
+                        set = function(info, value) customSpell.duration = value end,
+                    },
+                    track = {
+                        name = "Type",
+                        hidden = function(info) return not customSpell.id end,
+                        type = "select",
+                        width = "0.7",
+                        order = 4,
+                        values = {["debuff"] = "Debuff", ["buff"] = "Buff"},
+                        get = function(info) return customSpell.track end,
+                        set = function(info, value) customSpell.track = value end
+                    },
+                    add = {
+                        name = "Add",
+                        hidden = function(info) return not customSpell.id end,
+                        type = "execute",
+                        width = "0.7",
+                        order = 5,
+                        func = function(info)
+                            tinsert(customSpells, customSpell)
+                            customSpell = { id = nil, duration = nil, track = nil }
+                            self.options.args.addCustomSpell.args.customSpells.args = getCustomSpells()
+                            --LibStub("AceConfigRegistry-3.0"):NotifyChange("XiconPlateBuffs")
+                        end,
+                    },
+                    customSpells = {
+                        order = 6,
+                        name = "Custom Spells",
+                        type = "group",
+                        childGroups = "simple",
+                        args = getCustomSpells()
+                    },
+                }
             }
         },
     }

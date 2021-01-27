@@ -1087,6 +1087,7 @@ local function FeedOptions(appName, options,container,rootframe,path,group,inlin
 					
 					local imageCoords = GetOptionsMemberValue("imageCoords",v, options, path, appName)
 					local image, width, height = GetOptionsMemberValue("image",v, options, path, appName)
+					local imagePoint = GetOptionsMemberValue("imagePoint",v, options, path, appName)
 					
 					if type(image) == "string" then
 						control = gui:Create("Icon")
@@ -1101,6 +1102,9 @@ local function FeedOptions(appName, options,container,rootframe,path,group,inlin
 						else
 							control:SetImage(image)
 						end
+						if imagePoint then
+							control.image:SetPoint(imagePoint.self, control, imagePoint.relative, imagePoint.x, imagePoint.y)
+						end
 						if type(width) ~= "number" then
 							width = 32
 						end
@@ -1109,6 +1113,7 @@ local function FeedOptions(appName, options,container,rootframe,path,group,inlin
 						end
 						control:SetImageSize(width, height)
 						control:SetLabel(name)
+
 					else
 						control = gui:Create("Button")
 						control:SetText(name)
