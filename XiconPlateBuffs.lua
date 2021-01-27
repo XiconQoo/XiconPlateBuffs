@@ -4,7 +4,14 @@ local XiconDebuffModule = GetXiconDebuffModule()
 
 local print = function(s)
     local str = s
-    if s == nil then str = "" end
+    if s == nil then str = "nil" end
+    if type(str) == "boolean" then
+        if str then
+            str = "true"
+        else
+            str = "false"
+        end
+    end
     DEFAULT_CHAT_FRAME:AddMessage("|cffa0f6aa[".. ADDON_NAME .."]|r: " .. str)
 end
 
