@@ -5,14 +5,7 @@
 ## Version: 1.6.4-Beta
 ## SavedVariables: XiconPlateBuffsDB
 
-
-lib\LibStub\LibStub.lua
-lib\CallbackHandler-1.0\CallbackHandler-1.0.xml
-lib\AceAddon-3.0\AceAddon-3.0.xml
-lib\AceDB-3.0\AceDB-3.0.xml
-lib\AceDBOptions-3.0\AceDBOptions-3.0.xml
-lib\AceGUI-3.0\AceGUI-3.0.xml
-lib\AceConfig-3.0\AceConfig-3.0.xml
+libs.xml
 
 Constants.lua
 XiconDebuffModule.lua

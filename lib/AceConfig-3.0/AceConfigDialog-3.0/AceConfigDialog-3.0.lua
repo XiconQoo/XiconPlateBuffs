@@ -4,7 +4,7 @@
 -- @release $Id: AceConfigDialog-3.0.lua 958 2010-07-03 10:22:29Z nevcairiel $
 
 local LibStub = LibStub
-local MAJOR, MINOR = "AceConfigDialog-3.0", 49
+local MAJOR, MINOR = "AceConfigDialog-3.0", 50
 local AceConfigDialog, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceConfigDialog then return end
@@ -1087,7 +1087,6 @@ local function FeedOptions(appName, options,container,rootframe,path,group,inlin
 					
 					local imageCoords = GetOptionsMemberValue("imageCoords",v, options, path, appName)
 					local image, width, height = GetOptionsMemberValue("image",v, options, path, appName)
-					local imagePoint = GetOptionsMemberValue("imagePoint",v, options, path, appName)
 					
 					if type(image) == "string" then
 						control = gui:Create("Icon")
@@ -1101,9 +1100,6 @@ local function FeedOptions(appName, options,container,rootframe,path,group,inlin
 							control:SetImage(image, unpack(imageCoords))
 						else
 							control:SetImage(image)
-						end
-						if imagePoint then
-							control.image:SetPoint(imagePoint.self, control, imagePoint.relative, imagePoint.x, imagePoint.y)
 						end
 						if type(width) ~= "number" then
 							width = 32

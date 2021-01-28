@@ -114,7 +114,6 @@ local typedkeys={
 	execute={
 		image=optstringfunc,
 		imageCoords=optmethodtable,
-		imagePoint=opttable,
 		imageHeight=optnumber,
 		imageWidth=optnumber,
 	},
