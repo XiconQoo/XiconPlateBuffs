@@ -2,7 +2,7 @@
 ..\FrameXML\UI.xsd">
 	<Script file="AceGUI-3.0.lua"/>
 	<!-- Container -->
-	<Script file="widgets\AceGUIContainer-BlizOptionsGroup.lua"/>
+	<!--Script file="widgets\AceGUIContainer-BlizOptionsGroup.lua"/>
 	<Script file="widgets\AceGUIContainer-DropDownGroup.lua"/>
 	<Script file="widgets\AceGUIContainer-Frame.lua"/>
 	<Script file="widgets\AceGUIContainer-InlineGroup.lua"/>
@@ -10,7 +10,7 @@
 	<Script file="widgets\AceGUIContainer-SimpleGroup.lua"/>
 	<Script file="widgets\AceGUIContainer-TabGroup.lua"/>
 	<Script file="widgets\AceGUIContainer-TreeGroup.lua"/>
-	<Script file="widgets\AceGUIContainer-Window.lua"/>
+	<Script file="widgets\AceGUIContainer-Window.lua"/-->
 	<!-- Widgets -->
 	<Script file="widgets\AceGUIWidget-BlizOptionsGroup.lua"/>
 	<Script file="widgets\AceGUIWidget-Button.lua"/>
