@@ -32,7 +32,7 @@ local function getCustomSpell(customSpells)
                     --disabled = true,
                     image = texture,
                     width = "1",
-                    desc = format("Duration: %ds | Spell School: %s", customSpells[i].duration, customSpells[i].spellSchool),
+                    desc = format("Duration: %ds | Spell School: %s | ID: %d", customSpells[i].duration, customSpells[i].spellSchool, customSpells[i].id),
                     set = function(info, state)
                         XPB.db.profile.trackedCC[customSpells[i].track..customSpells[i].id] = state
                         XPB.modules["XiconDebuffModule"]:OnInitialize()
@@ -669,6 +669,8 @@ function XPB:CreateOptions()
                                 insert(self.db.profile.customDebuffs)
                                 self.options.args.addCustomSpell.args.customDebuffs.args = getCustomSpell(self.db.profile.customDebuffs)
                             end
+                            XPB.db.profile.trackedCC[customSpell.track..customSpell.id] = true
+                            XPB.modules["XiconDebuffModule"]:OnInitialize()
                             customSpell = { id = nil, duration = nil, track = nil }
                             self.options.args.addCustomSpell.args.errorMessage.name = ""
                             self.options.args.addCustomSpell.args.errorMessage.image = ""
