@@ -29,9 +29,17 @@ local function getCustomSpell(customSpells)
                     order = 1,
                     name = spellName,
                     type = "toggle",
+                    --disabled = true,
                     image = texture,
                     width = "1",
                     desc = format("Duration: %ds | Spell School: %s", customSpells[i].duration, customSpells[i].spellSchool),
+                    set = function(info, state)
+                        XPB.db.profile.trackedCC[customSpells[i].track..customSpells[i].id] = state
+                        XPB.modules["XiconDebuffModule"]:OnInitialize()
+                    end,
+                    get = function(info)
+                        return XPB.db.profile.trackedCC[customSpells[i].track..customSpells[i].id]
+                    end,
                 },
                 del = {
                     order = 2,
@@ -163,12 +171,15 @@ function XPB:GetTrackedCC()
     end
     for i=1, #customDebuffs do
         print(customDebuffs[i].id)
-        local spellName = GetSpellInfo(customDebuffs[i].id)
-        trackedCC[spellName] = customDebuffs[i]
+        if (XPB.db.profile.trackedCC[customDebuffs[i].track..customDebuffs[i].id]) then
+            trackedCC[GetSpellInfo(customDebuffs[i].id)] = customDebuffs[i]
+        end
     end
     for i=1, #customBuffs do
-        local spellName = GetSpellInfo(customBuffs[i].id)
-        trackedCC[spellName] = customBuffs[i]
+        print(customDebuffs[i].id)
+        if (XPB.db.profile.trackedCC[customBuffs[i].track..customBuffs[i].id]) then
+            trackedCC[GetSpellInfo(customBuffs[i].id)] = customBuffs[i]
+        end
     end
     return trackedCC
 end
