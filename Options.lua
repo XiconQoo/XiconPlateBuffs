@@ -106,7 +106,7 @@ local function getSpells()
             args = {},
         },
     }
-    local allSpells = initTrackedCrowdControl()
+    local allSpells = XPB.trackedCrowdControl
     local buffs, debuffs = {},{}
     for k,v in pairs(allSpells) do
         if v.track == "debuff" then tinsert(debuffs, v) end
@@ -151,7 +151,9 @@ end
 
 function XPB:GetTrackedCC()
     local trackedCC = {}
-    local allSpells = initTrackedCrowdControl()
+    local allSpells = self.trackedCrowdControl
+    local customDebuffs = self.db.profile.customDebuffs
+    local customBuffs = self.db.profile.customBuffs
     for k,v in pairs(self.db.profile.trackedCC) do
         if v then
             local spellId = string.match(k, "(%d+)")
@@ -159,10 +161,60 @@ function XPB:GetTrackedCC()
             trackedCC[spellName] = allSpells[spellName]
         end
     end
+    for i=1, #customDebuffs do
+        print(customDebuffs[i].id)
+        local spellName = GetSpellInfo(customDebuffs[i].id)
+        trackedCC[spellName] = customDebuffs[i]
+    end
+    for i=1, #customBuffs do
+        local spellName = GetSpellInfo(customBuffs[i].id)
+        trackedCC[spellName] = customBuffs[i]
+    end
     return trackedCC
 end
 
 function XPB:CreateOptions()
+    local trackedCC = XPB.trackedCrowdControl
+    local defaultTrackedCC = {}
+    for k,v in pairs(trackedCC) do
+        defaultTrackedCC[v.track..v.id] = true
+    end
+    local defaults = {
+        profile = {
+            debuff = {
+                iconSize = 40,
+                fontSize = 15,
+                responsive = true,
+                responsiveMax = 120,
+                font = "Fonts\\FRIZQT__.ttf",
+                yOffset = 5,
+                xOffset = -10,
+                alpha = 1.0,
+                sorting = "ascending",
+                anchor = { self = "BOTTOMLEFT", nameplate = "TOPLEFT" },
+                growDirection = { self = "LEFT", icon = "RIGHT" },
+            },
+            buff = {
+                iconSize = 40,
+                fontSize = 15,
+                responsive = true,
+                responsiveMax = 120,
+                font = "Fonts\\FRIZQT__.ttf",
+                yOffset = 0,
+                xOffset = 0,
+                alpha = 1.0,
+                sorting = "ascending",
+                anchor = { self = "BOTTOMLEFT", nameplate = "TOPLEFT" },
+                growDirection = { self = "LEFT", icon = "RIGHT" },
+            },
+            customBuffs = {},
+            customDebuffs = {},
+            attachBuffsToDebuffs = true,
+            trackedCC = defaultTrackedCC
+        }
+    }
+    self.db = LibStub("AceDB-3.0"):New("XiconPlateBuffsDB", defaults)
+
     self.options = {
         name = "XiconPlateBuffs",
         descStyle = "inline",
@@ -514,7 +566,7 @@ function XPB:CreateOptions()
                         imageWidth = 20,
                         imageHeight = 20,
                         name = "",
-                        width = "2",
+                        width = "full",
                         fontSize = "large",
                         order = 1
                     },
@@ -586,28 +638,30 @@ function XPB:CreateOptions()
                         func = function(info)
                             local function insert(table)
                                 local exists
+                                local spell = {id = tonumber(customSpell.id), duration = tonumber(customSpell.duration), spellSchool = customSpell.spellSchool, track = customSpell.track}
                                 for i = 1, #table do
-                                    if table[i].id == customSpell.id then
+                                    if table[i].id == spell.id then
                                         exists = i
                                         break
                                     end
                                 end
                                 if exists then
-                                    table[exists] = customSpell
+                                    table[exists] = spell
                                 else
-                                    tinsert(table, customSpell)
+                                    tinsert(table, spell)
                                 end
                             end
                             if customSpell.track == "buff" then
-                                insert(customBuffs)
-                                self.options.args.addCustomSpell.args.customBuffs.args = getCustomSpell(customBuffs)
+                                insert(self.db.profile.customBuffs)
+                                self.options.args.addCustomSpell.args.customBuffs.args = getCustomSpell(self.db.profile.customBuffs)
                             else
-                                insert(customDebuffs)
-                                self.options.args.addCustomSpell.args.customDebuffs.args = getCustomSpell(customDebuffs)
+                                insert(self.db.profile.customDebuffs)
+                                self.options.args.addCustomSpell.args.customDebuffs.args = getCustomSpell(self.db.profile.customDebuffs)
                             end
                             customSpell = { id = nil, duration = nil, track = nil }
                             self.options.args.addCustomSpell.args.errorMessage.name = ""
                             self.options.args.addCustomSpell.args.errorMessage.image = ""
+                            self.modules["XiconDebuffModule"]:OnInitialize()
                             LibStub("AceConfigRegistry-3.0"):NotifyChange("XiconPlateBuffs")
                         end,
                     },
@@ -616,14 +670,14 @@ function XPB:CreateOptions()
                         name = "Custom Debuffs",
                         type = "group",
                         childGroups = "simple",
-                        args = getCustomSpell(customDebuffs)
+                        args = getCustomSpell(self.db.profile.customDebuffs)
                     },
                     customBuffs = {
                         order = 8,
                         name = "Custom Buffs",
                         type = "group",
                         childGroups = "simple",
-                        args = getCustomSpell(customBuffs)
+                        args = getCustomSpell(self.db.profile.customBuffs)
                     },
                 }
             }

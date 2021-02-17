@@ -7,7 +7,7 @@
 
 libs.xml
 
-Constants.lua
-XiconDebuffModule.lua
 XiconPlateBuffs.lua
+XiconDebuffModule.lua
+Constants.lua
 Options.lua

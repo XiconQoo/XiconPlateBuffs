@@ -1,6 +1,6 @@
 local ADDON_NAME = "XiconPlateBuffs"
 local select, tonumber, tostring = select, tonumber, tostring
-local XiconDebuffModule = GetXiconDebuffModule()
+local XiconDebuffModule
 
 local print = function(s)
     local str = s
@@ -17,16 +17,35 @@ end
 
 ---------------------------------------------------------------------------------------------
 
--- FRAME SETUP FOR REGISTER EVENTS
+-- CORE
 
 ---------------------------------------------------------------------------------------------
 
 local XiconPlateBuffs = CreateFrame("Frame", "XiconPlateBuffs", UIParent)
-XiconPlateBuffs:EnableMouse(false)
-XiconPlateBuffs:SetWidth(1)
-XiconPlateBuffs:SetHeight(1)
-XiconPlateBuffs:SetAlpha(0)
 LibStub("AceAddon-3.0"):NewAddon(XiconPlateBuffs, ADDON_NAME)
+XiconPlateBuffs.modules = {}
+
+function XiconPlateBuffs:OnInitialize()
+    self.knownNameplates = {}
+    self.numKnownNameplates = 0
+    self.Aloft = IsAddOnLoaded("Aloft")
+    self.SoHighPlates = IsAddOnLoaded("SoHighPlates")
+    self.ElvUI = IsAddOnLoaded("ElvUI")
+    self.ShaguPlates = IsAddOnLoaded("ShaguPlates-tbc") or IsAddOnLoaded("ShaguPlates")
+    XiconPlateBuffs:CreateOptions()
+    for _,module in pairs(self.modules) do
+        module:OnInitialize()
+    end
+    XiconDebuffModule = self.modules["XiconDebuffModule"]
+    print("Loaded")
+    print("write /xpb or /xpbconfig for options")
+end
+
+function XiconPlateBuffs:NewModule(name)
+    local module = CreateFrame("Frame", name)
+    self.modules[name] = module
+    return module
+end
 
 ---------------------------------------------------------------------------------------------
 
@@ -40,20 +59,30 @@ function table.removekey(table, key)
     return element
 end
 
-local function getName(namePlate)
+function XiconPlateBuffs:GetName(namePlate)
     local name
-    local _, _, _, _, nameRegion1, _, nameRegion2 = namePlate:GetRegions()
-    if namePlate.aloftData then
-        name = namePlate.aloftData.name
-    elseif ElvUI then
-        name = namePlate.UnitFrame.oldName:GetText()
-    elseif sohighPlates then
-        --name = namePlate.name:GetText()
-        name = namePlate.oldname:GetText()
-    elseif strmatch(nameRegion1:GetText(), "%d") then
-        name = nameRegion2:GetText()
+    if self.Aloft then
+        if namePlate.aloftData then
+            name = namePlate.aloftData.name
+        end
+    elseif self.SoHighPlates then
+        if namePlate.oldname or namePlate.name then
+            name = (namePlate.oldname and namePlate.oldname:GetText()) or (namePlate.name and namePlate.name:GetText())
+        end
     else
-        name = nameRegion1:GetText()
+        if self.ElvUI then
+            if namePlate.UnitFrame then
+                name = namePlate.UnitFrame.oldName:GetText()
+            end
+        end
+        if not name then
+            local _, _, _, _, nameRegion1, nameRegion2 = namePlate:GetRegions()
+            if strmatch(nameRegion1:GetText(), "%d") then
+                name = nameRegion2:GetText()
+            else
+                name = nameRegion1:GetText()
+            end
+        end
     end
     return name
 end
@@ -66,52 +95,9 @@ end
 
 local events = {} -- store event functions to be assigned to reputation frame
 
-function events:ADDON_LOADED(...)
-    if select(1, ...) == ADDON_NAME then
-        local trackedCC = initTrackedCrowdControl()
-        local defaultTrackedCC = {}
-        for k,v in pairs(trackedCC) do
-            defaultTrackedCC[v.track..v.id] = true
-        end
-        local defaults = {
-            profile = {
-                debuff = {
-                    iconSize = 40,
-                    fontSize = 15,
-                    responsive = true,
-                    responsiveMax = 120,
-                    font = "Fonts\\FRIZQT__.ttf",
-                    yOffset = 5,
-                    xOffset = -10,
-                    alpha = 1.0,
-                    sorting = "ascending",
-                    anchor = { self = "BOTTOMLEFT", nameplate = "TOPLEFT" },
-                    growDirection = { self = "LEFT", icon = "RIGHT" },
-                },
-                buff = {
-                    iconSize = 40,
-                    fontSize = 15,
-                    responsive = true,
-                    responsiveMax = 120,
-                    font = "Fonts\\FRIZQT__.ttf",
-                    yOffset = 0,
-                    xOffset = 0,
-                    alpha = 1.0,
-                    sorting = "ascending",
-                    anchor = { self = "BOTTOMLEFT", nameplate = "TOPLEFT" },
-                    growDirection = { self = "LEFT", icon = "RIGHT" },
-                },
-                attachBuffsToDebuffs = true,
-                trackedCC = defaultTrackedCC
-            }
-        }
-        XiconPlateBuffs.db = LibStub("AceDB-3.0"):New("XiconPlateBuffsDB", defaults)
-        XiconDebuffModule:Init()
-        XiconPlateBuffs:CreateOptions()
-        print("Loaded")
-        print("write /xpb or /xpbconfig for options")
-        XiconPlateBuffs:UnregisterEvent("ADDON_LOADED")
-    end
+function events:PLAYER_ENTERING_WORLD()
+    XiconPlateBuffs.numKnownNameplates = 0
+    XiconPlateBuffs.knownNameplates = {}
 end
 
 ---------------------------------------------------------------------------------------------
@@ -133,42 +119,52 @@ end
 
 ---------------------------------------------------------------------------------------------
 
+local NameplateFrame = CreateFrame("Frame")
+NameplateFrame:SetScript("OnUpdate", function(self, elapsed)
+    local num = WorldFrame:GetNumChildren()
+    if XiconPlateBuffs.numKnownNameplates < num then
+        XiconPlateBuffs.numKnownNameplates = num
+        for i = 1, num do
+            local namePlate = select(i, WorldFrame:GetChildren())
+            if namePlate:GetNumRegions() > 2 and namePlate:GetNumChildren() >= 1 and not XiconPlateBuffs.knownNameplates[namePlate] then
+                XiconPlateBuffs.knownNameplates[namePlate] = true
+            end
+        end
+    end
+end)
+
 local updateInterval, lastUpdate = .01, 0
-XiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
+XiconPlateBuffs:SetScript("OnUpdate", function(self, elapsed)
     lastUpdate = lastUpdate + elapsed
     if lastUpdate > updateInterval then
         -- do stuff
-        if NAMEPLATES_ON or XiconPlateBuffs.testMode then
-            local num = WorldFrame:GetNumChildren()
-            for i = 1, num do
-                local namePlate = select(i, WorldFrame:GetChildren())
-                if namePlate:GetNumRegions() > 2 and namePlate:GetNumChildren() >= 1 then
-                    if namePlate:IsVisible() then
-                        local name = getName(namePlate)
-                        namePlate.nameStr = name
-                        if XiconPlateBuffs.testMode then
-                            local dstGUID = "0x00001312031"
-                            XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 29166, 15) -- innervate
-                            XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 22570, 5) -- maim
-                            XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 14309, 8) -- freezing trap
-                            XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 12826, 5) -- polymorph
-                        end
-                        -- check if namePlate is target or mouseover
-                        local border, castborder, casticon, highlight, nameText, levelText, levelIcon, raidIcon = namePlate:GetRegions()
-                        local target = UnitExists("target") and namePlate:GetAlpha() == 1 or nil
-                        local mouseover = UnitExists("mouseover") and highlight:IsShown() or nil
-                        if target then
-                            XiconDebuffModule:updateNameplate("target", namePlate, name)
-                        elseif mouseover then
-                            XiconDebuffModule:updateNameplate("mouseover", namePlate, name)
-                        else
-                            XiconDebuffModule:assignDebuffs(name, namePlate, false)
-                        end
+        for namePlate,_ in pairs(self.knownNameplates) do
+            if namePlate:IsVisible() then
+                local name = self:GetName(namePlate)
+                if name then
+                    namePlate.nameStr = name
+                    if self.testMode then
+                        local dstGUID = "0x00001312031"
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 29166, 15) -- innervate
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 22570, 5) -- maim
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 14309, 8) -- freezing trap
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 12826, 5) -- polymorph
+                    end
+                    -- check if namePlate is target or mouseover
+                    local border, castborder, casticon, highlight, nameText, levelText, levelIcon, raidIcon = namePlate:GetRegions()
+                    local target = UnitExists("target") and namePlate:GetAlpha() == 1 or nil
+                    local mouseover = UnitExists("mouseover") and highlight:IsShown() or nil
+                    if target then
+                        XiconDebuffModule:updateNameplate("target", namePlate, name)
+                    elseif mouseover then
+                        XiconDebuffModule:updateNameplate("mouseover", namePlate, name)
+                    else
+                        XiconDebuffModule:assignDebuffs(name, namePlate, false)
                     end
                 end
             end
         end
-        XiconPlateBuffs.testMode = false
+        self.testMode = false
         -- end do stuff
         lastUpdate = 0;
     end
