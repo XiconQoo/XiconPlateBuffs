@@ -4,7 +4,7 @@
 -- @release $Id: AceConfigDialog-3.0.lua 958 2010-07-03 10:22:29Z nevcairiel $
 
 local LibStub = LibStub
-local MAJOR, MINOR = "AceConfigDialog-3.0", 50
+local MAJOR, MINOR = "AceConfigDialog-3.0", 79 --edited version to make sure width with numbers is a thing
 local AceConfigDialog, oldminor = LibStub:NewLibrary(MAJOR, MINOR)
 
 if not AceConfigDialog then return end
