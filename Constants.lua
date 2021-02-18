@@ -6,6 +6,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 6,
         priority = 40,
+        spellSchool = "immune",
         id = 33786,
     },
     -- Hibernate
@@ -13,7 +14,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 10,
         priority = 40,
-        magic = true,
+        spellSchool = "magic",
         id = 18658,
     },
     -- Entangling Roots
@@ -22,7 +23,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 10,
         priority = 30,
         onDamage = true,
-        magic = true,
+        spellSchool = "magic",
         root = true,
         id = 26989,
     },
@@ -31,6 +32,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 4,
         priority = 30,
+        spellSchool = "physical",
         root = true,
         id = 16979,
     },
@@ -39,6 +41,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 4,
         priority = 30,
+        spellSchool = "physical",
         id = 8983,
     },
     -- Pounce
@@ -46,6 +49,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 3,
         priority = 40,
+        spellSchool = "physical",
         id = 27006,
     },
     -- Maim
@@ -54,6 +58,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 6,
         priority = 40,
         incapacite = true,
+        spellSchool = "physical",
         id = 22570,
     },
 
@@ -63,6 +68,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "buff",
         duration = 20,
         priority = 10,
+        spellSchool = "magic",
         id = 29166,
     },
 
@@ -73,7 +79,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 10,
         priority = 40,
         onDamage = true,
-        magic = true,
+        spellSchool = "magic",
         id = 14309,
     },
     -- Wyvern Sting
@@ -82,7 +88,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 10,
         priority = 40,
         onDamage = true,
-        poison = true,
+        spellSchool = "poison",
         sleep = true,
         id = 19386,
     },
@@ -92,6 +98,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 4,
         priority = 40,
         onDamage = true,
+        spellSchool = "physical",
         id = 19503,
     },
     -- Silencing Shot
@@ -99,7 +106,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 3,
         priority = 15,
-        magic = true,
+        spellSchool = "magic",
         id = 34490,
     },
     -- Intimidation
@@ -107,6 +114,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 2,
         priority = 40,
+        spellSchool = "physical",
         id = 19577,
     },
 
@@ -115,6 +123,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "buff",
         duration = 18,
         priority = 20,
+        spellSchool = "physical",
         id = 34692,
     },
 
@@ -125,7 +134,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 10,
         priority = 40,
         onDamage = true,
-        magic = true,
+        spellSchool = "magic",
         id = 12826,
     },
     -- Dragon's Breath
@@ -134,7 +143,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 3,
         priority = 40,
         onDamage = true,
-        magic = true,
+        spellSchool = "magic",
         id = 31661,
     },
     -- Frost Nova
@@ -143,7 +152,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 8,
         priority = 30,
         onDamage = true,
-        magic = true,
+        spellSchool = "magic",
         root = true,
         id = 27088,
     },
@@ -153,7 +162,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 8,
         priority = 30,
         onDamage = true,
-        magic = true,
+        spellSchool = "magic",
         root = true,
         id = 33395,
     },
@@ -162,7 +171,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 4,
         priority = 15,
-        magic = true,
+        spellSchool = "magic",
         id = 18469,
     },
 
@@ -171,6 +180,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "buff",
         duration = 10,
         priority = 20,
+        spellSchool = "immune",
         id = 45438,
     },
 
@@ -180,7 +190,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 6,
         priority = 40,
-        magic = true,
+        spellSchool = "magic",
         id = 10308,
     },
     -- Repentance
@@ -189,7 +199,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 6,
         priority = 40,
         onDamage = true,
-        magic = true,
+        spellSchool = "magic",
         incapacite = true,
         id = 20066,
     },
@@ -199,6 +209,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "buff",
         duration = 10,
         priority = 10,
+        spellSchool = "magic",
         id = 10278,
     },
     -- Blessing of Freedom
@@ -206,6 +217,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "buff",
         duration = 14,
         priority = 10,
+        spellSchool = "magic",
         id = 1044,
     },
     -- Divine Shield
@@ -213,6 +225,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "buff",
         duration = 12,
         priority = 20,
+        spellSchool = "immune",
         id = 642,
     },
 
@@ -223,7 +236,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         priority = 40,
         onDamage = true,
         fear = true,
-        magic = true,
+        spellSchool = "magic",
         id = 8122,
     },
     -- Chastise
@@ -232,6 +245,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 8,
         priority = 30,
         root = true,
+        spellSchool = "immune",
         id = 44047,
     },
     -- Mind Control
@@ -240,6 +254,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 10,
         priority = 40,
         magic = true,
+        spellSchool = "immune",
         id = 605,
     },
     -- Silence
@@ -247,7 +262,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 5,
         priority = 15,
-        magic = true,
+        spellSchool = "magic",
         id = 15487,
     },
 
@@ -256,6 +271,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "buff",
         duration = 8,
         priority = 10,
+        spellSchool = "magic",
         id = 33206,
     },
 
@@ -266,6 +282,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         priority = 40,
         onDamage = true,
         incapacite = true,
+        spellSchool = "physical",
         id = 6770,
     },
     -- Blind
@@ -274,6 +291,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 10,
         priority = 40,
         onDamage = true,
+        spellSchool = "physical",
         id = 2094,
     },
     -- Cheap Shot
@@ -281,6 +299,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 4,
         priority = 40,
+        spellSchool = "physical",
         id = 1833,
     },
     -- Kidney Shot
@@ -288,6 +307,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 6,
         priority = 40,
+        spellSchool = "physical",
         id = 8643,
     },
     -- Gouge
@@ -297,6 +317,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         priority = 40,
         onDamage = true,
         incapacite = true,
+        spellSchool = "physical",
         id = 1776,
     },
     -- Kick - Silence
@@ -304,6 +325,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 2,
         priority = 15,
+        spellSchool = "physical",
         id = 18425,
     },
     -- Garrote - Silence
@@ -311,6 +333,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 3,
         priority = 15,
+        spellSchool = "physical",
         id = 1330,
     },
 
@@ -319,6 +342,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "buff",
         duration = 5,
         priority = 20,
+        spellSchool = "physical",
         id = 31224,
     },
 
@@ -329,7 +353,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         priority = 40,
         onDamage = true,
         fear = true,
-        magic = true,
+        spellSchool = "magic",
         id = 5782,
     },
     -- Death Coil
@@ -337,6 +361,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 3,
         priority = 40,
+        spellSchool = "magic",
         id = 27223,
     },
     -- Shadowfury
@@ -344,7 +369,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 2,
         priority = 40,
-        magic = true,
+        spellSchool = "magic",
         id = 30283,
     },
     -- Seduction (Succubus)
@@ -354,7 +379,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         priority = 40,
         onDamage = true,
         fear = true,
-        magic = true,
+        spellSchool = "magic",
         id = 6358,
     },
     -- Howl of Terror
@@ -364,7 +389,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         priority = 40,
         onDamage = true,
         fear = true,
-        magic = true,
+        spellSchool = "magic",
         id = 5484,
     },
     -- Spell Lock (Felhunter)
@@ -372,7 +397,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 3,
         priority = 15,
-        magic = true,
+        spellSchool = "magic",
         id = 24259,
     },
     --[[
@@ -394,6 +419,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         priority = 15,
         onDamage = true,
         fear = true,
+        spellSchool = "physical",
         id = 5246,
     },
     -- Concussion Blow
@@ -401,6 +427,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 5,
         priority = 40,
+        spellSchool = "physical",
         id = 12809,
     },
     -- Intercept Stun
@@ -408,6 +435,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 3,
         priority = 40,
+        spellSchool = "physical",
         id = 25274,
     },
 
@@ -416,15 +444,25 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "buff",
         duration = 5,
         priority = 10,
+        spellSchool = "physical",
         id = 23920,
     },
 
+    -- Mace Stun Effect
+    [GetSpellInfo(5530)] = {
+        track = "debuff",
+        duration = 3,
+        priority = 40,
+        spellSchool = "physical",
+        id = 5530,
+    },
 
     -- War Stomp
     [GetSpellInfo(20549)] = {
         track = "debuff",
         duration = 2,
         priority = 40,
+        spellSchool = "physical",
         id = 20549,
     },
     -- Arcane Torrent
@@ -432,7 +470,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         track = "debuff",
         duration = 2,
         priority = 15,
-        magic = true,
+        spellSchool = "magic",
         id = 28730,
     },
 }

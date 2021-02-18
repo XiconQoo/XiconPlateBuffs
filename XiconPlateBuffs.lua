@@ -160,9 +160,8 @@ XiconPlateBuffs:SetScript("OnUpdate", function(self, elapsed)
                         XiconDebuffModule:updateNameplate("target", namePlate, name)
                     elseif mouseover then
                         XiconDebuffModule:updateNameplate("mouseover", namePlate, name)
-                    else
-                        XiconDebuffModule:assignDebuffs(name, namePlate, false)
                     end
+                    XiconDebuffModule:assignDebuffs(name, namePlate, false)
                 end
             end
         end

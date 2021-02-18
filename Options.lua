@@ -179,6 +179,15 @@ function XPB:GetTrackedCC()
     return trackedCC
 end
 
+local DebuffTypeColor = { };
+DebuffTypeColor["none"]     = { r = 0.80, g = 0, b = 0 , a = 1};
+DebuffTypeColor["magic"]    = { r = 0.20, g = 0.60, b = 1.00, a = 1};
+DebuffTypeColor["curse"]    = { r = 0.60, g = 0.00, b = 1.00, a = 1 };
+DebuffTypeColor["disease"]  = { r = 0.60, g = 0.40, b = 0, a = 1 };
+DebuffTypeColor["poison"]   = { r = 0.00, g = 0.60, b = 0, a = 1 };
+DebuffTypeColor["immune"]   = { r = 1.00, g = 0.02, b = 0.99, a = 1 };
+DebuffTypeColor[""] = DebuffTypeColor["none"];
+
 function XPB:CreateOptions()
     local trackedCC = XPB.trackedCrowdControl
     local defaultTrackedCC = {}
@@ -187,6 +196,11 @@ function XPB:CreateOptions()
     end
     local defaults = {
         profile = {
+            iconBorderColorCurse = DebuffTypeColor["curse"],
+            iconBorderColorMagic = DebuffTypeColor["magic"],
+            iconBorderColorPoison = DebuffTypeColor["poison"],
+            iconBorderColorPhysical = DebuffTypeColor["none"],
+            iconBorderColorImmune = DebuffTypeColor["immune"],
             debuff = {
                 iconSize = 40,
                 iconBorder = "Interface\\AddOns\\XiconPlateBuffs\\media\\Border_rounded_blp",
