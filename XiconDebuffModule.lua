@@ -590,28 +590,26 @@ end
 
 function events:PLAYER_ENTERING_WORLD(...) -- TODO add option to enable/disable in open world/instance/etc
     for k,v in pairs(trackedUnitNames) do
-        for i=1, #trackedUnitNames[k] do
-            local i = #trackedUnitNames[k].buff
-            while i > 0 do
-                trackedUnitNames[k].buff[i]:Hide()
-                trackedUnitNames[k].buff[i]:SetAlpha(0)
-                trackedUnitNames[k].buff[i]:SetParent(UIParent)
-                trackedUnitNames[k].buff[i]:SetScript("OnUpdate", nil)
-                framePool[#framePool + 1] = tremove(trackedUnitNames[k].buff, i)
-                i = i - 1
-            end
-            i = #trackedUnitNames[k].debuff
-            while i > 0 do
-                trackedUnitNames[k].debuff[i]:Hide()
-                trackedUnitNames[k].debuff[i]:SetAlpha(0)
-                trackedUnitNames[k].debuff[i]:SetParent(UIParent)
-                trackedUnitNames[k].debuff[i]:SetScript("OnUpdate", nil)
-                framePool[#framePool + 1] = tremove(trackedUnitNames[k].debuff, i)
-                i = i - 1
-            end
-            if #trackedUnitNames[k].buff == 0 and #trackedUnitNames[k].debuff == 0 then
-                trackedUnitNames[k] = nil
-            end
+        local i = #trackedUnitNames[k].buff
+        while i > 0 do
+            trackedUnitNames[k].buff[i]:Hide()
+            trackedUnitNames[k].buff[i]:SetAlpha(0)
+            trackedUnitNames[k].buff[i]:SetParent(UIParent)
+            trackedUnitNames[k].buff[i]:SetScript("OnUpdate", nil)
+            framePool[#framePool + 1] = tremove(trackedUnitNames[k].buff, i)
+            i = i - 1
+        end
+        i = #trackedUnitNames[k].debuff
+        while i > 0 do
+            trackedUnitNames[k].debuff[i]:Hide()
+            trackedUnitNames[k].debuff[i]:SetAlpha(0)
+            trackedUnitNames[k].debuff[i]:SetParent(UIParent)
+            trackedUnitNames[k].debuff[i]:SetScript("OnUpdate", nil)
+            framePool[#framePool + 1] = tremove(trackedUnitNames[k].debuff, i)
+            i = i - 1
+        end
+        if #trackedUnitNames[k].buff == 0 and #trackedUnitNames[k].debuff == 0 then
+            trackedUnitNames[k] = nil
         end
     end
     trackedUnitNames = {} -- wipe all data
