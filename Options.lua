@@ -8,8 +8,6 @@ local XPB = LibStub("AceAddon-3.0"):GetAddon("XiconPlateBuffs")
 
 local customSpell = { id = nil, duration = nil, track = nil }
 local errorMessage = ""
-local customBuffs = { { id = 1459, duration = 50, track = "buff", spellSchool = "magic" }}
-local customDebuffs = { { id = 1, duration = 50, track = "debuff", spellSchool = "magic" }}
 
 local function getCustomSpell(customSpells)
     local spellList = {}
@@ -29,7 +27,6 @@ local function getCustomSpell(customSpells)
                     order = 1,
                     name = spellName,
                     type = "toggle",
-                    --disabled = true,
                     image = texture,
                     width = "1",
                     desc = format("Duration: %ds | Spell School: %s | ID: %d", customSpells[i].duration, customSpells[i].spellSchool, customSpells[i].id),
@@ -170,13 +167,11 @@ function XPB:GetTrackedCC()
         end
     end
     for i=1, #customDebuffs do
-        print(customDebuffs[i].id)
         if (XPB.db.profile.trackedCC[customDebuffs[i].track..customDebuffs[i].id]) then
             trackedCC[GetSpellInfo(customDebuffs[i].id)] = customDebuffs[i]
         end
     end
     for i=1, #customBuffs do
-        print(customDebuffs[i].id)
         if (XPB.db.profile.trackedCC[customBuffs[i].track..customBuffs[i].id]) then
             trackedCC[GetSpellInfo(customBuffs[i].id)] = customBuffs[i]
         end
@@ -194,6 +189,8 @@ function XPB:CreateOptions()
         profile = {
             debuff = {
                 iconSize = 40,
+                iconBorder = "Interface\\AddOns\\XiconPlateBuffs\\media\\Border_rounded_blp",
+                iconBorderColor = {r = 1, g = 0, b = 0, a = 1},
                 fontSize = 15,
                 responsive = true,
                 responsiveMax = 120,
@@ -207,6 +204,8 @@ function XPB:CreateOptions()
             },
             buff = {
                 iconSize = 40,
+                iconBorder = "Interface\\AddOns\\XiconPlateBuffs\\media\\Border_rounded_blp",
+                iconBorderColor = {r = 0, g = 0, b = 0, a = 1},
                 fontSize = 15,
                 responsive = true,
                 responsiveMax = 120,
@@ -697,7 +696,6 @@ function XPB:CreateOptions()
         },
     }
 
-    LibStub("AceConfig-3.0"):RegisterOptionsTable("XiconPlateBuffs", self.options,  {"/xpb", "/xpbconfig"})
-    --LibStub("AceConfigDialog-3.0"):Open("XiconPlateBuffs")
+    LibStub("AceConfig-3.0"):RegisterOptionsTable("XiconPlateBuffs", self.options)
     LibStub("AceConfigDialog-3.0"):AddToBlizOptions("XiconPlateBuffs", "XiconPlateBuffs")
 end

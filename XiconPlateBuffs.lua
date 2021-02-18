@@ -37,6 +37,8 @@ function XiconPlateBuffs:OnInitialize()
         module:OnInitialize()
     end
     XiconDebuffModule = self.modules["XiconDebuffModule"]
+    LibStub("AceConsole-3.0"):RegisterChatCommand("xpb", function() LibStub("AceConfigDialog-3.0"):Open("XiconPlateBuffs") end)
+    LibStub("AceConsole-3.0"):RegisterChatCommand("xpbconfig", function() LibStub("AceConfigDialog-3.0"):Open("XiconPlateBuffs") end)
     print("Loaded")
     print("write /xpb or /xpbconfig for options")
 end

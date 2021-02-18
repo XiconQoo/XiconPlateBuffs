@@ -136,9 +136,11 @@ function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeL
                 --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(GetTime(), timeLeft or trackedCC[spellName].duration)
                 if timeLeft then
                     trackedUnitNames[destName..destGUID].buff[i].endtime = calcEndTime(timeLeft)
-                    --sorting
-                    sortIcons(destName, destGUID, "buff")
+                else
+                    trackedUnitNames[destName..destGUID].buff[i].endtime = GetTime() + trackedCC[trackedUnitNames[destName..destGUID].buff[i].spellName].duration
                 end
+                --sorting
+                sortIcons(destName, destGUID, "buff")
                 found = true
                 break
             end
@@ -149,9 +151,11 @@ function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeL
                     --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(GetTime(), timeLeft or trackedCC[spellName].duration)
                     if timeLeft then
                         trackedUnitNames[destName..destGUID].debuff[i].endtime = calcEndTime(timeLeft)
-                        --sorting
-                        sortIcons(destName, destGUID, "debuff")
+                    else
+                        trackedUnitNames[destName..destGUID].debuff[i].endtime = GetTime() + trackedCC[trackedUnitNames[destName..destGUID].debuff[i].spellName].duration
                     end
+                    --sorting
+                    sortIcons(destName, destGUID, "debuff")
                     found = true
                     break
                 end
@@ -175,8 +179,10 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft)
         icon = tremove(framePool, 1)
     else
         icon = CreateFrame("frame", nil, nil)
-        icon.texture = icon:CreateTexture(nil, "BORDER")
+        icon.texture = icon:CreateTexture(nil, "BACKGROUND")
         icon.texture:SetAllPoints(icon)
+        icon.border = icon:CreateTexture(nil, "BORDER")
+        icon.border:SetAllPoints(icon)
         icon.cooldown = icon:CreateFontString(nil, "OVERLAY")
         icon.cooldown:SetAllPoints(icon)
         icon.cooldown:SetFont(XPB.db.profile[trackedCC[GetSpellInfo(spellID)].track].font, XPB.db.profile[trackedCC[GetSpellInfo(spellID)].track].fontSize, "OUTLINE")
@@ -185,6 +191,14 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft)
     icon:SetParent(UIParent)
     icon:SetAlpha(0)
     icon.texture:SetTexture(texture)
+    if (trackedCC[GetSpellInfo(spellID)].track == "debuff") then
+        icon.border:SetTexture(XPB.db.profile.debuff.iconBorder)
+        icon.border:SetVertexColor(XPB.db.profile.debuff.iconBorderColor.r, XPB.db.profile.debuff.iconBorderColor.g, XPB.db.profile.debuff.iconBorderColor.b, XPB.db.profile.debuff.iconBorderColor.a)
+    else
+        icon.border:SetTexture(XPB.db.profile.buff.iconBorder)
+        icon.border:SetVertexColor(XPB.db.profile.buff.iconBorderColor.r, XPB.db.profile.buff.iconBorderColor.g, XPB.db.profile.buff.iconBorderColor.b, XPB.db.profile.buff.iconBorderColor.a)
+    end
+
 
     --icon.cooldowncircle = CreateFrame("Cooldown", nil, icon, "CooldownFrameTemplate")
     --icon.cooldowncircle.noCooldownCount = true -- disable OmniCC
@@ -396,14 +410,14 @@ local function updateDebuffsOnUnit(unit)
             end
         end
         --safe delete debuff if not exists
-        if trackedUnitNames[unitName..unitGUID] then
+        --[[if trackedUnitNames[unitName..unitGUID] then
             for i = 1, #trackedUnitNames[unitName..unitGUID].debuff do
                 if trackedUnitNames[unitName..unitGUID].debuff[i] and not debuffs[trackedUnitNames[unitName..unitGUID].debuff[i].spellName] then
                     print("Remove debuff " .. trackedUnitNames[unitName..unitGUID].debuff[i].spellName)
                     removeDebuff(unitName, unitGUID, trackedCC[trackedUnitNames[unitName..unitGUID].debuff[i].spellName].id)
                 end
             end
-        end
+        end--]]
         local buffs = {}
         for i = 1, 40 do
             local spellName, _, _, _, duration, timeLeft,isMine,isStealable,shouldConsolidate,spellId = UnitBuff(unit, i)
@@ -418,13 +432,13 @@ local function updateDebuffsOnUnit(unit)
             end
         end
         --safe delete buff if not exists
-        if trackedUnitNames[unitName..unitGUID] then
+        --[[if trackedUnitNames[unitName..unitGUID] then
             for i = 1, #trackedUnitNames[unitName..unitGUID].buff do
                 if trackedUnitNames[unitName..unitGUID].buff[i] and not buffs[trackedUnitNames[unitName..unitGUID].buff[i].name] then
                     removeDebuff(unitName, unitGUID, trackedUnitNames[unitName..unitGUID].buff[i].id)
                 end
             end
-        end
+        end--]]
     end
 end
 
