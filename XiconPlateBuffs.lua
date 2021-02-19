@@ -148,6 +148,7 @@ XiconPlateBuffs:SetScript("OnUpdate", function(self, elapsed)
                     if self.testMode then
                         local dstGUID = "0x00001312031"
                         XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 29166, 15) -- innervate
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 642, 12) -- divine shield
                         XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 22570, 5) -- maim
                         XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 14309, 8) -- freezing trap
                         XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 12826, 5) -- polymorph
