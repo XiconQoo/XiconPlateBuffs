@@ -94,17 +94,27 @@ end
 
 local function calcEndTime(timeLeft) return GetTime() + timeLeft end
 
+local function hideOrRemoveIconFromList(list, index, remove)
+    list[index]:Hide()
+    list[index]:SetAlpha(0)
+    list[index]:SetParent(UIParent)
+    if (remove) then
+        list[index]:SetScript("OnUpdate", nil)
+        --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(0,0)
+        framePool[#framePool + 1] = tremove(list, index)
+    else
+        list[index]:ClearAllPoints()
+        list[index]:Show()
+    end
+end
+
+
 local function removeDebuff(destName, destGUID, spellID)
     if trackedUnitNames[destName..destGUID] then
         for i = 1, #trackedUnitNames[destName..destGUID].buff do
             if trackedUnitNames[destName..destGUID].buff[i] then
                 if trackedUnitNames[destName..destGUID].buff[i].spellName == select(1, GetSpellInfo(spellID)) then
-                    trackedUnitNames[destName..destGUID].buff[i]:Hide()
-                    trackedUnitNames[destName..destGUID].buff[i]:SetAlpha(0)
-                    trackedUnitNames[destName..destGUID].buff[i]:SetParent(UIParent)
-                    trackedUnitNames[destName..destGUID].buff[i]:SetScript("OnUpdate", nil)
-                    --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(0,0)
-                    framePool[#framePool + 1] = tremove(trackedUnitNames[destName..destGUID].buff, i)
+                    hideOrRemoveIconFromList(trackedUnitNames[destName..destGUID].buff, i, true)
                     break
                 end
             end
@@ -112,12 +122,7 @@ local function removeDebuff(destName, destGUID, spellID)
         for i = 1, #trackedUnitNames[destName..destGUID].debuff do
             if trackedUnitNames[destName..destGUID].debuff[i] then
                 if trackedUnitNames[destName..destGUID].debuff[i].spellName == select(1, GetSpellInfo(spellID)) then
-                    trackedUnitNames[destName..destGUID].debuff[i]:Hide()
-                    trackedUnitNames[destName..destGUID].debuff[i]:SetAlpha(0)
-                    trackedUnitNames[destName..destGUID].debuff[i]:SetParent(UIParent)
-                    trackedUnitNames[destName..destGUID].debuff[i]:SetScript("OnUpdate", nil)
-                    --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(0,0)
-                    framePool[#framePool + 1] = tremove(trackedUnitNames[destName..destGUID].debuff, i)
+                    hideOrRemoveIconFromList(trackedUnitNames[destName..destGUID].debuff, i, true)
                     break
                 end
             end
@@ -231,7 +236,6 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft)
     icon.trackType = trackedCC[GetSpellInfo(spellID)].track
 
     local iconTimer = function(iconFrame, elapsed)
-
         local itimer = ceil(iconFrame.endtime - GetTime()) -- cooldown duration
         local milliTimer = round(iconFrame.endtime - GetTime(), 1)
         iconFrame.timeLeft = milliTimer
@@ -270,32 +274,26 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft)
     sortIcons(destName, destGUID, icon.trackType)
 end
 
-
-local function addIcons(dstName, namePlate, force)
-    local numBuffs, numDebuffs = #trackedUnitNames[dstName].buff, #trackedUnitNames[dstName].debuff
-    local sizeBuff, sizeDebuff, fontSizeBuff, fontSizeDebuff
-    if XPB.db.profile.buff.responsive and numBuffs > 0 and numBuffs * XPB.db.profile.buff["iconSize"] + (numBuffs * 2 - 2) > XPB.db.profile.buff.responsiveMax then
-        sizeBuff = (XPB.db.profile.buff.responsiveMax - (numBuffs * 2 - 2)) / numBuffs
-        if XPB.db.profile.buff.fontSize < sizeBuff/2 then
-            fontSizeBuff = XPB.db.profile.buff.fontSize
+local function calcResponsive(responsive, responsiveMax, iconSize, fontSize, numBuffs)
+    local sizeBuff, fontSizeBuff
+    if responsive and numBuffs > 0 and numBuffs * iconSize + (numBuffs * 2 - 2) > responsiveMax then
+        sizeBuff = (responsiveMax - (numBuffs * 2 - 2)) / numBuffs
+        if fontSize < sizeBuff/2 then
+            fontSizeBuff = fontSize
         else
             fontSizeBuff = sizeBuff / 2
         end
     else
-        fontSizeBuff = XPB.db.profile.buff.fontSize
-        sizeBuff = XPB.db.profile.buff.iconSize
+        fontSizeBuff = fontSize
+        sizeBuff = iconSize
     end
-    if XPB.db.profile.debuff.responsive and numDebuffs > 0 and numDebuffs * XPB.db.profile.debuff["iconSize"] + (numDebuffs * 2 - 2) > XPB.db.profile.debuff.responsiveMax then
-        sizeDebuff = (XPB.db.profile.debuff.responsiveMax - (numDebuffs * 2 - 2)) / numDebuffs
-        if XPB.db.profile.debuff.fontSize < sizeDebuff/2 then
-            fontSizeDebuff = XPB.db.profile.debuff.fontSize
-        else
-            fontSizeDebuff = sizeDebuff / 2
-        end
-    else
-        fontSizeDebuff = XPB.db.profile.debuff.fontSize
-        sizeDebuff = XPB.db.profile.debuff.iconSize
-    end
+    return sizeBuff, fontSizeBuff
+end
+
+local function addIcons(dstName, namePlate, force)
+    local numBuffs, numDebuffs = #trackedUnitNames[dstName].buff, #trackedUnitNames[dstName].debuff
+    local sizeBuff, fontSizeBuff = calcResponsive(XPB.db.profile.buff["responsive"], XPB.db.profile.buff["responsiveMax"], XPB.db.profile.buff["iconSize"], XPB.db.profile.buff.fontSize, numBuffs)
+    local sizeDebuff, fontSizeDebuff = calcResponsive(XPB.db.profile.debuff["responsive"], XPB.db.profile.debuff["responsiveMax"], XPB.db.profile.debuff["iconSize"], XPB.db.profile.debuff["fontSize"], numDebuffs)
 
     for i = 1, #trackedUnitNames[dstName].debuff do
         trackedUnitNames[dstName].debuff[i]:SetParent(namePlate)
@@ -364,18 +362,10 @@ local function hideIcons(namePlate, dstName)
         for _, child in ipairs(kids) do
             if child.destGUID then
                 for i = 1, #trackedUnitNames[child.destName .. child.destGUID].buff do
-                    trackedUnitNames[child.destName .. child.destGUID].buff[i]:Hide()
-                    trackedUnitNames[child.destName .. child.destGUID].buff[i]:SetAlpha(0)
-                    trackedUnitNames[child.destName .. child.destGUID].buff[i]:SetParent(UIParent)
-                    trackedUnitNames[child.destName .. child.destGUID].buff[i]:ClearAllPoints()
-                    trackedUnitNames[child.destName .. child.destGUID].buff[i]:Show()
+                    hideOrRemoveIconFromList(trackedUnitNames[child.destName .. child.destGUID].buff, i, false)
                 end
                 for i = 1, #trackedUnitNames[child.destName .. child.destGUID].debuff do
-                    trackedUnitNames[child.destName .. child.destGUID].debuff[i]:Hide()
-                    trackedUnitNames[child.destName .. child.destGUID].debuff[i]:SetAlpha(0)
-                    trackedUnitNames[child.destName .. child.destGUID].debuff[i]:SetParent(UIParent)
-                    trackedUnitNames[child.destName .. child.destGUID].debuff[i]:ClearAllPoints()
-                    trackedUnitNames[child.destName .. child.destGUID].debuff[i]:Show()
+                    hideOrRemoveIconFromList(trackedUnitNames[child.destName .. child.destGUID].debuff, i, false)
                 end
                 if trackedUnitNames[child.destName .. child.destGUID].parent then
                     trackedUnitNames[child.destName .. child.destGUID].parent.xiconPlateActive = nil
@@ -388,20 +378,12 @@ local function hideIcons(namePlate, dstName)
         if trackedUnitNames[dstName] then
             local i = #trackedUnitNames[dstName].buff
             while i > 0 do
-                trackedUnitNames[dstName].buff[i]:Hide()
-                trackedUnitNames[dstName].buff[i]:SetAlpha(0)
-                trackedUnitNames[dstName].buff[i]:SetParent(UIParent)
-                trackedUnitNames[dstName].buff[i]:SetScript("OnUpdate", nil)
-                framePool[#framePool + 1] = tremove(trackedUnitNames[dstName].buff, i)
+                hideOrRemoveIconFromList(trackedUnitNames[dstName].buff, i, true)
                 i = i - 1
             end
             i = #trackedUnitNames[dstName].debuff
             while i > 0 do
-                trackedUnitNames[dstName].debuff[i]:Hide()
-                trackedUnitNames[dstName].debuff[i]:SetAlpha(0)
-                trackedUnitNames[dstName].debuff[i]:SetParent(UIParent)
-                trackedUnitNames[dstName].debuff[i]:SetScript("OnUpdate", nil)
-                framePool[#framePool + 1] = tremove(trackedUnitNames[dstName].debuff, i)
+                hideOrRemoveIconFromList(trackedUnitNames[dstName].debuff, i, true)
                 i = i - 1
             end
             if #trackedUnitNames[dstName].buff == 0 and #trackedUnitNames[dstName].debuff == 0 then
@@ -646,20 +628,12 @@ function events:PLAYER_ENTERING_WORLD(...) -- TODO add option to enable/disable 
     for k,v in pairs(trackedUnitNames) do
         local i = #trackedUnitNames[k].buff
         while i > 0 do
-            trackedUnitNames[k].buff[i]:Hide()
-            trackedUnitNames[k].buff[i]:SetAlpha(0)
-            trackedUnitNames[k].buff[i]:SetParent(UIParent)
-            trackedUnitNames[k].buff[i]:SetScript("OnUpdate", nil)
-            framePool[#framePool + 1] = tremove(trackedUnitNames[k].buff, i)
+            hideOrRemoveIconFromList(trackedUnitNames[k].buff, i, true)
             i = i - 1
         end
         i = #trackedUnitNames[k].debuff
         while i > 0 do
-            trackedUnitNames[k].debuff[i]:Hide()
-            trackedUnitNames[k].debuff[i]:SetAlpha(0)
-            trackedUnitNames[k].debuff[i]:SetParent(UIParent)
-            trackedUnitNames[k].debuff[i]:SetScript("OnUpdate", nil)
-            framePool[#framePool + 1] = tremove(trackedUnitNames[k].debuff, i)
+            hideOrRemoveIconFromList(trackedUnitNames[k].debuff, i, true)
             i = i - 1
         end
         if #trackedUnitNames[k].buff == 0 and #trackedUnitNames[k].debuff == 0 then
