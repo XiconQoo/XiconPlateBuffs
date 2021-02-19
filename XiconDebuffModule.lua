@@ -406,7 +406,7 @@ local function updateDebuffsOnUnit(unit, event)
         for i = 1, 40 do
             local spellName,rank,icon,count,dtype,duration,timeLeft,isMine = UnitDebuff(unit, i)
             if not spellName then break end
-            if trackedCC[spellName] and (timeLeft or event == "UNIT_AURA") then
+            if trackedCC[spellName] and timeLeft then
                 debuffs[spellName] = true
                 --update buff durations
                 XiconDebuffModule:addOrRefreshDebuff(unitName, unitGUID, trackedCC[spellName].id, timeLeft or trackedCC[spellName].duration, true)
@@ -431,9 +431,14 @@ local function updateDebuffsOnUnit(unit, event)
             if trackedCC[spellName] and (timeLeft or event == "UNIT_AURA") then
                 buffs[spellName] = true
                 --update buff durations
-                XiconDebuffModule:addOrRefreshDebuff(unitName, unitGUID, trackedCC[spellName].id, timeLeft or trackedCC[spellName].duration, true)
-                if timeLeft > 0.5 then
-                    XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, unitName, unitGUID, duration, timeLeft, "enemy"))
+                if timeLeft then
+                    XiconDebuffModule:addOrRefreshDebuff(unitName, unitGUID, trackedCC[spellName].id, timeLeft, true)
+                    if timeLeft > 0.5 then
+                        XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, unitName, unitGUID, duration, timeLeft, "enemy"))
+                    end
+                elseif event == "UNIT_AURA" then
+                    XiconDebuffModule:addOrRefreshDebuff(unitName, unitGUID, trackedCC[spellName].id, trackedCC[spellName].duration, true)
+                    XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, unitName, unitGUID, trackedCC[spellName].duration, trackedCC[spellName].duration, "enemy"))
                 end
             end
         end
