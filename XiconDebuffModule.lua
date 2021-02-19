@@ -130,6 +130,7 @@ local function removeDebuff(destName, destGUID, spellID)
         if #trackedUnitNames[destName..destGUID].buff == 0 and #trackedUnitNames[destName..destGUID].debuff == 0 then
             if trackedUnitNames[destName..destGUID].parent then
                 trackedUnitNames[destName..destGUID].parent.xiconPlateActive = nil
+                trackedUnitNames[destName..destGUID].parent.guessedGUID = nil
             end
             trackedUnitNames[destName..destGUID] = nil
         end
@@ -356,6 +357,7 @@ local function hideIcons(namePlate, dstName)
     if namePlate then -- OnHide or just remove icons
         if not dstName and namePlate.XiconGUID then -- OnHide
             namePlate.XiconGUID = nil
+            namePlate.guessedGUID = nil
         end
         namePlate.xiconPlateActive = nil
         local kids = { namePlate:GetChildren() };
@@ -497,16 +499,17 @@ function XiconDebuffModule:assignDebuffs(dstName, namePlate, force)
                 end
                 name = k
                 break
-            elseif not namePlate.xiconPlateActive and not namePlate.XiconGUID and splitStr[1] == dstName and not trackedUnitNames[k].parent then
+            elseif not namePlate.xiconPlateActive and not trackedUnitNames[k].parent and not namePlate.XiconGUID and splitStr[1] == dstName then
                 -- wild guess in pve, accurate in pvp
+                namePlate.guessedGUID = function() return splitStr[2] end
                 name = k
                 break
-            elseif not namePlate.XiconGUID and splitStr[1] == dstName and trackedUnitNames[k].parent == namePlate and namePlate.xiconPlateActive then
+            elseif namePlate.xiconPlateActive and trackedUnitNames[k].parent == namePlate and not namePlate.XiconGUID and splitStr[1] == dstName then
                 -- still wild guess but active, we update here nonetheless, accurate in pvp
                 name = k
                 break
-            else
-                hideIcons(namePlate, dstName)
+            elseif namePlate.xiconPlateActive and not namePlate.guessedGUID then
+                hideIcons(namePlate, k)
             end
         end
     end
