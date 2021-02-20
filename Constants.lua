@@ -156,6 +156,16 @@ XiconPlateBuffs.trackedCrowdControl = {
         root = true,
         id = 27088,
     },
+    -- Frostbite
+    [GetSpellInfo(12494)] = {
+        track = "debuff",
+        duration = 5,
+        priority = 30,
+        onDamage = true,
+        spellSchool = "magic",
+        root = true,
+        id = 12494,
+    },
     -- Freeze (Water Elemental)
     [GetSpellInfo(33395)] = {
         track = "debuff",
