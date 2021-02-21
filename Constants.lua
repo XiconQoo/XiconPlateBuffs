@@ -3,13 +3,13 @@ local XiconPlateBuffs = LibStub("AceAddon-3.0"):GetAddon("XiconPlateBuffs")
 XiconPlateBuffs.trackedCrowdControl = {
 
     ["interrupts"] = {
-        [GetSpellInfo(16979)] = {duration = 4, id = 16979, track = "debuff",}, -- Feral Charge (Druid)
-        [GetSpellInfo(2139)] = {duration = 8, id = 2139, track = "debuff",}, -- Counterspell (Mage)
-        [GetSpellInfo(1766)] = {duration = 5, id = 1766, track = "debuff",}, -- Kick (Rogue)
-        [GetSpellInfo(6552)] = {duration = 4, id = 6552, track = "debuff",}, -- Pummel (Warrior)
-        [GetSpellInfo(72)] = {duration = 6, id = 72, track = "debuff",}, -- Shield Bash (Warrior)
-        [GetSpellInfo(8042)] = {duration = 2, id = 8042, track = "debuff",}, -- Earth Shock (Shaman)
-        [GetSpellInfo(19244)] = {duration = 5, id = 19244, track = "debuff",}, -- Spell Lock
+        [GetSpellInfo(16979)] = {duration = 4, id = 16979, track = "debuff", texture = select(3, GetSpellInfo(19244))}, -- Feral Charge (Druid)
+        [GetSpellInfo(2139)] = {duration = 8, id = 2139, track = "debuff", texture = select(3, GetSpellInfo(19244))}, -- Counterspell (Mage)
+        [GetSpellInfo(1766)] = {duration = 5, id = 1766, track = "debuff", texture = select(3, GetSpellInfo(19244))}, -- Kick (Rogue)
+        [GetSpellInfo(6552)] = {duration = 4, id = 6552, track = "debuff", texture = select(3, GetSpellInfo(19244))}, -- Pummel (Warrior)
+        [GetSpellInfo(72)] = {duration = 6, id = 72, track = "debuff", texture = select(3, GetSpellInfo(19244))}, -- Shield Bash (Warrior)
+        [GetSpellInfo(8042)] = {duration = 2, id = 8042, track = "debuff", texture = select(3, GetSpellInfo(19244))}, -- Earth Shock (Shaman)
+        [GetSpellInfo(19244)] = {duration = 5, id = 1, track = "debuff", texture = select(3, GetSpellInfo(19244))}, -- Spell Lock
     },
     ["shortinterrupts"] = {
         --Shaman

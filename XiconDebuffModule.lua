@@ -179,7 +179,7 @@ function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeL
     end
 end
 
-function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, interrupt, spellSchool)
+function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, interrupt, spellSchool, tex)
     if trackedUnitNames[destName..destGUID] == nil then
         trackedUnitNames[destName..destGUID] = { debuff = {}, buff ={}}
     end
@@ -188,6 +188,7 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, inte
     local track = trackedCC[GetSpellInfo(spellID)] and trackedCC[GetSpellInfo(spellID)].track or "debuff"
     if interrupt then
         duration = timeLeft
+        texture = tex
     end
     local icon
     if #framePool > 0 then
@@ -238,8 +239,8 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, inte
     --icon.cooldowncircle:SetCooldown(GetTime(), timeLeft or duration)
 
     icon.endtime = calcEndTime(timeLeft or duration)
-    icon.spellName = interrupt and select(1, GetSpellInfo(trackedCC.interrupts[spellName].id)) or spellName
-    icon.spellID = interrupt and trackedCC.interrupts[spellName].id or trackedCC[GetSpellInfo(spellID)].id
+    icon.spellName = spellName
+    icon.spellID = spellID
     icon.destGUID = destGUID
     icon.destName = destName
     icon.trackType = track
@@ -618,7 +619,12 @@ function events:COMBAT_LOG_EVENT_UNFILTERED(...)
                 multiplier = 0.7
             end
             --print(spellName .. " - " .. extraSpellId .. " - " .. extraSpellName .. " - " .. extraSchool)
-            XiconDebuffModule:addDebuff(name, dstGUID, trackedCC.interrupts[spellName].id, trackedCC.interrupts[spellName].duration * multiplier, true, getSpellSchool(extraSchool))
+            XiconDebuffModule:addDebuff(name, dstGUID,
+                    trackedCC.interrupts[spellName].id,
+                    trackedCC.interrupts[spellName].duration * multiplier,
+                    true,
+                    getSpellSchool(extraSchool),
+                    trackedCC.interrupts[spellName].texture)
             updateDebuffsOnUnitGUID(dstGUID)
         end
     end
