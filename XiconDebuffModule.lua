@@ -303,6 +303,7 @@ local function addIcons(dstName, namePlate, force)
     local numBuffs, numDebuffs = #trackedUnitNames[dstName].buff, #trackedUnitNames[dstName].debuff
     local sizeBuff, fontSizeBuff = calcResponsive(XPB.db.profile.buff["responsive"], XPB.db.profile.buff["responsiveMax"], XPB.db.profile.buff["iconSize"], XPB.db.profile.buff.fontSize, numBuffs)
     local sizeDebuff, fontSizeDebuff = calcResponsive(XPB.db.profile.debuff["responsive"], XPB.db.profile.debuff["responsiveMax"], XPB.db.profile.debuff["iconSize"], XPB.db.profile.debuff["fontSize"], numDebuffs)
+    local x, y = 0,0
 
     for i = 1, #trackedUnitNames[dstName].debuff do
         trackedUnitNames[dstName].debuff[i]:SetParent(namePlate)
@@ -319,10 +320,19 @@ local function addIcons(dstName, namePlate, force)
                     XPB.db.profile.debuff.xOffset,
                     XPB.db.profile.debuff.yOffset)
         else
+            x,y = 0,0
+            if XPB.db.profile.debuff.growDirection.icon == "LEFT" then
+                x = -XPB.db.profile.debuff.iconPadding
+            elseif XPB.db.profile.debuff.growDirection.icon == "RIGHT" then
+                x = XPB.db.profile.debuff.iconPadding
+            elseif XPB.db.profile.debuff.growDirection.icon == "TOP" then
+                y = XPB.db.profile.debuff.iconPadding
+            elseif XPB.db.profile.debuff.growDirection.icon == "BOTTOM" then
+                y = -XPB.db.profile.debuff.iconPadding
+            end
             trackedUnitNames[dstName].debuff[i]:SetPoint(XPB.db.profile.debuff.growDirection.self,
-                    trackedUnitNames[dstName].debuff[i - 1], XPB.db.profile.debuff.growDirection.icon,
-                    0, 0)
-        end
+                    trackedUnitNames[dstName].debuff[i - 1], XPB.db.profile.debuff.growDirection.icon, x, y)
+            end
         trackedUnitNames[dstName].debuff[i]:Show()
     end
 
@@ -355,7 +365,18 @@ local function addIcons(dstName, namePlate, force)
                         XPB.db.profile.buff.yOffset)
             end
         else
-            trackedUnitNames[dstName].buff[i]:SetPoint(XPB.db.profile.buff.growDirection.self, trackedUnitNames[dstName].buff[i - 1], XPB.db.profile.buff.growDirection.icon, 0, 0)
+            x,y = 0,0
+            if XPB.db.profile.buff.growDirection.icon == "LEFT" then
+                x = -XPB.db.profile.buff.iconPadding
+            elseif XPB.db.profile.buff.growDirection.icon == "RIGHT" then
+                x = XPB.db.profile.buff.iconPadding
+            elseif XPB.db.profile.buff.growDirectionicon == "TOP" then
+                y = XPB.db.profile.buff.iconPadding
+            elseif XPB.db.profile.buff.growDirection.icon == "BOTTOM" then
+                y = -XPB.db.profile.buff.iconPadding
+            end
+            trackedUnitNames[dstName].buff[i]:SetPoint(XPB.db.profile.buff.growDirection.self, trackedUnitNames[dstName].buff[i - 1],
+                    XPB.db.profile.buff.growDirection.icon, x, y)
         end
         trackedUnitNames[dstName].buff[i]:Show()
     end

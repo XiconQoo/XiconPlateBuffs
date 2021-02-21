@@ -207,6 +207,7 @@ function XPB:CreateOptions()
             iconBorderColorImmune = DebuffTypeColor["immune"],
             debuff = {
                 iconSize = 40,
+                iconPadding = 0,
                 iconBorder = "Interface\\AddOns\\XiconPlateBuffs\\media\\Border_rounded_blp",
                 iconBorderColor = {r = 1, g = 0, b = 0, a = 1},
                 fontSize = 15,
@@ -222,6 +223,7 @@ function XPB:CreateOptions()
             },
             buff = {
                 iconSize = 40,
+                iconPadding = 0,
                 iconBorder = "Interface\\AddOns\\XiconPlateBuffs\\media\\Border_rounded_blp",
                 iconBorderColor = {r = 0, g = 0, b = 0, a = 1},
                 fontSize = 15,
@@ -292,8 +294,33 @@ function XPB:CreateOptions()
                                 name = "Icon Size",
                                 width = "full",
                             },
-                            fontSize = {
+                            iconPadding = {
                                 order = 2,
+                                min = 0,
+                                max = 20,
+                                step = 0.5,
+                                type = "range",
+                                name = "Icon Padding",
+                                width = "full",
+                            },
+                            alpha = {
+                                order = 3,
+                                min = 0,
+                                max = 1,
+                                step = 0.01,
+                                type = "range",
+                                name = "Alpha",
+                                isPercent = true,
+                                width = "full",
+                            },
+                            --font
+                            headerFont = {
+                                type = "header",
+                                name = "Font",
+                                order = 10,
+                            },
+                            fontSize = {
+                                order = 11,
                                 min = 1,
                                 max = 100,
                                 step = 1,
@@ -301,7 +328,7 @@ function XPB:CreateOptions()
                                 name = "Font Size",
                             },
                             font = {
-                                order = 3,
+                                order = 12,
                                 type = "select",
                                 name = "Cooldown Font",
                                 values = { ["Fonts\\ARIALN.ttf"] = "Arial",
@@ -311,14 +338,20 @@ function XPB:CreateOptions()
                                 },
                                 width = "0.7"
                             },
+                            --position
+                            headerPosition = {
+                                type = "header",
+                                name = "Position",
+                                order = 20,
+                            },
                             responsive = {
-                                order = 4,
+                                order = 21,
                                 name = "Responsive Scaling",
                                 type = "toggle"
                             },
                             responsiveMax = {
                                 hidden = function() return not self.db.profile.debuff.responsive end,
-                                order = 5,
+                                order = 22,
                                 min = self.db.profile.debuff.iconSize,
                                 max = 1000,
                                 step = 1,
@@ -327,7 +360,7 @@ function XPB:CreateOptions()
                                 width = "full",
                             },
                             xOffset = {
-                                order = 6,
+                                order = 23,
                                 min = -100,
                                 max = 100,
                                 step = 1,
@@ -336,7 +369,7 @@ function XPB:CreateOptions()
                                 width = "0.85",
                             },
                             yOffset = {
-                                order = 7,
+                                order = 24,
                                 min = -100,
                                 max = 100,
                                 step = 1,
@@ -344,24 +377,8 @@ function XPB:CreateOptions()
                                 name = "Vertical Offset",
                                 width = "0.85",
                             },
-                            alpha = {
-                                order = 8,
-                                min = 0,
-                                max = 1,
-                                step = 0.01,
-                                type = "range",
-                                name = "Alpha",
-                                isPercent = true,
-                                width = "full",
-                            },
-                            sorting = {
-                                order = 9,
-                                type = "select",
-                                name = "Sorting",
-                                values = { ["none"] = "None", ["ascending"] = "Ascending", ["descending"] = "Descending"},
-                            },
                             anchor = {
-                                order = 10,
+                                order = 25,
                                 type = "select",
                                 name = "Anchor",
                                 values = { ["TOPLEFT"] = "TOPLEFT", ["TOPRIGHT"] = "TOPRIGHT", ["LEFT"] = "LEFT", ["RIGHT"] = "RIGHT", ["BOTTOMLEFT"] = "BOTTOMLEFT", ["BOTTOMRIGHT"] = "BOTTOMRIGHT" },
@@ -391,7 +408,7 @@ function XPB:CreateOptions()
                                 end
                             },
                             growDirection = {
-                                order = 11,
+                                order = 26,
                                 type = "select",
                                 name = "Grow Direction",
                                 values = { ["TOP"] = "TOP", ["LEFT"] = "LEFT", ["RIGHT"] = "RIGHT", ["BOTTOM"] = "BOTTOM"},
@@ -413,7 +430,13 @@ function XPB:CreateOptions()
                                         self.db.profile.debuff.growDirection.icon = state
                                     end
                                 end
-                            }
+                            },
+                            sorting = {
+                                order = 27,
+                                type = "select",
+                                name = "Sorting",
+                                values = { ["none"] = "None", ["ascending"] = "Ascending", ["descending"] = "Descending"},
+                            },
                         },
                     },
                     buff = {
@@ -438,8 +461,33 @@ function XPB:CreateOptions()
                                 name = "Icon Size",
                                 width = "full",
                             },
-                            fontSize = {
+                            iconPadding = {
                                 order = 2,
+                                min = 0,
+                                max = 20,
+                                step = 0.5,
+                                type = "range",
+                                name = "Icon Padding",
+                                width = "full",
+                            },
+                            alpha = {
+                                order = 3,
+                                min = 0,
+                                max = 1,
+                                step = 0.01,
+                                type = "range",
+                                name = "Alpha",
+                                isPercent = true,
+                                width = "full",
+                            },
+                            --font
+                            headerFont = {
+                                type = "header",
+                                name = "Font",
+                                order = 10,
+                            },
+                            fontSize = {
+                                order = 11,
                                 min = 1,
                                 max = 100,
                                 step = 1,
@@ -447,7 +495,7 @@ function XPB:CreateOptions()
                                 name = "Font Size",
                             },
                             font = {
-                                order = 3,
+                                order = 12,
                                 type = "select",
                                 name = "Cooldown Font",
                                 values = { ["Fonts\\ARIALN.ttf"] = "Arial",
@@ -457,14 +505,20 @@ function XPB:CreateOptions()
                                 },
                                 width = "0.7"
                             },
+                            --position
+                            headerPosition = {
+                                type = "header",
+                                name = "Position",
+                                order = 20,
+                            },
                             responsive = {
-                                order = 4,
+                                order = 21,
                                 name = "Responsive Scaling",
                                 type = "toggle",
                             },
                             responsiveMax = {
                                 hidden = function() return not self.db.profile.buff.responsive end,
-                                order = 5,
+                                order = 22,
                                 min = self.db.profile.buff.iconSize,
                                 max = 1000,
                                 step = 1,
@@ -473,7 +527,7 @@ function XPB:CreateOptions()
                                 width = "full",
                             },
                             xOffset = {
-                                order = 6,
+                                order = 23,
                                 min = -100,
                                 max = 100,
                                 step = 1,
@@ -482,7 +536,7 @@ function XPB:CreateOptions()
                                 width = "0.85",
                             },
                             yOffset = {
-                                order = 7,
+                                order = 24,
                                 min = -100,
                                 max = 100,
                                 step = 1,
@@ -490,25 +544,9 @@ function XPB:CreateOptions()
                                 name = "Vertical Offset",
                                 width = "0.85",
                             },
-                            alpha = {
-                                order = 8,
-                                min = 0,
-                                max = 1,
-                                step = 0.01,
-                                type = "range",
-                                name = "Alpha",
-                                isPercent = true,
-                                width = "full",
-                            },
-                            sorting = {
-                                order = 9,
-                                type = "select",
-                                name = "Sorting",
-                                values = { ["none"] = "None", ["ascending"] = "Ascending", ["descending"] = "Descending"},
-                            },
                             anchor = {
                                 --hidden = function() return self.db.attachBuffsToDebuffs end,
-                                order = 10,
+                                order = 25,
                                 type = "select",
                                 name = "Anchor",
                                 values = { ["TOPLEFT"] = "TOPLEFT", ["TOPRIGHT"] = "TOPRIGHT", ["LEFT"] = "LEFT", ["RIGHT"] = "RIGHT", ["BOTTOMLEFT"] = "BOTTOMLEFT", ["BOTTOMRIGHT"] = "BOTTOMRIGHT" },
@@ -539,7 +577,7 @@ function XPB:CreateOptions()
                             },
                             growDirection = {
                                 --hidden = function() return self.db.attachBuffsToDebuffs end,
-                                order = 11,
+                                order = 26,
                                 type = "select",
                                 name = "Grow Direction",
                                 values = { TOP = "TOP", LEFT = "LEFT", RIGHT = "RIGHT", BOTTOM = "BOTTOM"},
@@ -561,7 +599,13 @@ function XPB:CreateOptions()
                                         self.db.profile.buff.growDirection.icon = state
                                     end
                                 end
-                            }
+                            },
+                            sorting = {
+                                order = 27,
+                                type = "select",
+                                name = "Sorting",
+                                values = { ["none"] = "None", ["ascending"] = "Ascending", ["descending"] = "Descending"},
+                            },
                         },
                     },
                 },
