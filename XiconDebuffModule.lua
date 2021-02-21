@@ -179,14 +179,15 @@ function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeL
     end
 end
 
-function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, interrupt)
+function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, interrupt, spellSchool)
     if trackedUnitNames[destName..destGUID] == nil then
         trackedUnitNames[destName..destGUID] = { debuff = {}, buff ={}}
     end
     local spellName, _, texture = GetSpellInfo(spellID)
     local duration = trackedCC[spellName] ~= nil and trackedCC[spellName].duration or 10
-    if interrupt and trackedCC[spellName].interrupt then
-        duration = trackedCC[spellName].interrupt
+    local track = trackedCC[GetSpellInfo(spellID)] and trackedCC[GetSpellInfo(spellID)].track or "debuff"
+    if interrupt then
+        duration = timeLeft
     end
     local icon
     if #framePool > 0 then
@@ -199,7 +200,7 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, inte
         icon.border:SetAllPoints(icon)
         icon.cooldown = icon:CreateFontString(nil, "OVERLAY")
         icon.cooldown:SetAllPoints(icon)
-        icon.cooldown:SetFont(XPB.db.profile[trackedCC[GetSpellInfo(spellID)].track].font, XPB.db.profile[trackedCC[GetSpellInfo(spellID)].track].fontSize, "OUTLINE")
+        icon.cooldown:SetFont(XPB.db.profile[track].font, XPB.db.profile[track].fontSize, "OUTLINE")
     end
 
     icon:SetParent(UIParent)
@@ -207,7 +208,7 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, inte
     icon.texture:SetTexture(texture)
     local color
     if interrupt then
-        color = XPB.db.profile.iconBorderColorInterrupt
+        color = spellSchool
     elseif trackedCC[GetSpellInfo(spellID)].spellSchool == "magic" then
         color = XPB.db.profile.iconBorderColorMagic
     elseif trackedCC[GetSpellInfo(spellID)].spellSchool == "poison" then
@@ -221,7 +222,9 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, inte
     else
         color = {r = 0, g = 0, b = 0, a = 1}
     end
-    if (trackedCC[GetSpellInfo(spellID)].track == "debuff") then
+    if interrupt then
+        icon.border:SetTexture(XPB.db.profile.debuff.iconBorder)
+    elseif (track == "debuff") then
         icon.border:SetTexture(XPB.db.profile.debuff.iconBorder)
     else
         icon.border:SetTexture(XPB.db.profile.buff.iconBorder)
@@ -235,11 +238,11 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, inte
     --icon.cooldowncircle:SetCooldown(GetTime(), timeLeft or duration)
 
     icon.endtime = calcEndTime(timeLeft or duration)
-    icon.spellName = interrupt and select(1, GetSpellInfo(trackedCC[GetSpellInfo(spellID)].interruptId)) or spellName
-    icon.spellID = interrupt and trackedCC[GetSpellInfo(spellID)].interruptId or trackedCC[GetSpellInfo(spellID)].id
+    icon.spellName = interrupt and select(1, GetSpellInfo(trackedCC.interrupts[spellName].id)) or spellName
+    icon.spellID = interrupt and trackedCC.interrupts[spellName].id or trackedCC[GetSpellInfo(spellID)].id
     icon.destGUID = destGUID
     icon.destName = destName
-    icon.trackType = trackedCC[GetSpellInfo(spellID)].track
+    icon.trackType = track
 
     local iconTimer = function(iconFrame, elapsed)
         local itimer = ceil(iconFrame.endtime - GetTime()) -- cooldown duration
@@ -553,8 +556,30 @@ end
 
 local events = {}
 
+local function getSpellSchool(extraSchool)
+    local spellSchool
+    if (extraSchool==1) then
+        spellSchool = {r = 1, g = 1, b = 0, a =  1} --- "physical" 255, 255, 0
+    elseif (extraSchool==2) then
+        spellSchool = {r = 1, g = 0.901, b = 0.501, a =  1} ---"holy" -- 255, 230, 128
+    elseif (extraSchool==4) then
+        spellSchool = {r = 1, g = 0.501, b = 0, a =  1} ---"fire" --  255, 128, 0
+    elseif (extraSchool==8) then
+        spellSchool = {r = 0.302, g = 1, b = 0.302, a =  1} ---"nature" --  77, 255, 77
+    elseif (extraSchool==16) then
+        spellSchool = {r = 0.501, g = 1, b = 1, a =  1} ---"frost" -- 128, 255, 255
+    elseif (extraSchool==32) then
+        spellSchool = {r = 0.501, g = 0.501, b = 1, a =  1} ---"shadow" --128, 128, 255
+    elseif (extraSchool==64) then
+        spellSchool = {r = 1, g = 0.501, b = 1, a =  1} ---"arcane" -- 255, 128, 255
+    else
+        spellSchool = {r = 1, g = 1, b = 1, a =  1} ---"unknown spell school"
+    end
+    return spellSchool
+end
+
 function events:COMBAT_LOG_EVENT_UNFILTERED(...)
-    local _, eventType, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellID, spellName, spellSchool, auraType, stackCount = select(1, ...)
+    local _, eventType, srcGUID, srcName, srcFlags, dstGUID, dstName, dstFlags, spellID, spellName, spellSchool, extraSpellId, extraSpellName, extraSchool = select(1, ...)
     local dstIsEnemy = bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) == COMBATLOG_OBJECT_REACTION_NEUTRAL or bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE
     local srcIsEnemy = bit.band(srcFlags, COMBATLOG_OBJECT_REACTION_NEUTRAL) == COMBATLOG_OBJECT_REACTION_NEUTRAL or bit.band(dstFlags, COMBATLOG_OBJECT_REACTION_HOSTILE) == COMBATLOG_OBJECT_REACTION_HOSTILE
     local name
@@ -565,14 +590,14 @@ function events:COMBAT_LOG_EVENT_UNFILTERED(...)
         end
     end
     if eventType == "SPELL_INTERRUPT" then
-        --print(eventType .. " - " .. (dstName and dstName.." dst" or srcName and srcName.." src"))
-        --print(spellName .. " - " .. spellID)
         name = string.gsub(dstName, "%s+", "")
-        if (trackedCC[spellName] and trackedCC[spellName].interrupt) then
-            --XiconDebuffModule:addDebuff(name, dstGUID, spellID, timeLeft)
-            --print(eventType .. " - " .. (dstName and dstName.." dst" or srcName and srcName.." src"))
-            --print(spellName .. " - " .. spellID)
-            XiconDebuffModule:addDebuff(name, dstGUID, trackedCC[spellName].id, trackedCC[spellName].interrupt, true)
+        if (trackedCC.interrupts[spellName]) then
+            local multiplier = 1
+            if trackedCC.shortinterrupts[extraSpellName] then
+                multiplier = 0.7
+            end
+            --print(spellName .. " - " .. extraSpellId .. " - " .. extraSpellName .. " - " .. extraSchool)
+            XiconDebuffModule:addDebuff(name, dstGUID, trackedCC.interrupts[spellName].id, trackedCC.interrupts[spellName].duration * multiplier, true, getSpellSchool(extraSchool))
             updateDebuffsOnUnitGUID(dstGUID)
         end
     end

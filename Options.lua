@@ -176,6 +176,8 @@ function XPB:GetTrackedCC()
             trackedCC[GetSpellInfo(customBuffs[i].id)] = customBuffs[i]
         end
     end
+    trackedCC["interrupts"] = allSpells["interrupts"]
+    trackedCC["shortinterrupts"] = allSpells["shortinterrupts"]
     return trackedCC
 end
 
@@ -192,7 +194,9 @@ function XPB:CreateOptions()
     local trackedCC = XPB.trackedCrowdControl
     local defaultTrackedCC = {}
     for k,v in pairs(trackedCC) do
-        defaultTrackedCC[v.track..v.id] = true
+        if k ~= "interrupts" and k ~= "shortinterrupts" then
+            defaultTrackedCC[v.track..v.id] = true
+        end
     end
     local defaults = {
         profile = {
@@ -201,7 +205,6 @@ function XPB:CreateOptions()
             iconBorderColorPoison = DebuffTypeColor["poison"],
             iconBorderColorPhysical = DebuffTypeColor["none"],
             iconBorderColorImmune = DebuffTypeColor["immune"],
-            iconBorderColorInterrupt = DebuffTypeColor["none"],
             debuff = {
                 iconSize = 40,
                 iconBorder = "Interface\\AddOns\\XiconPlateBuffs\\media\\Border_rounded_blp",

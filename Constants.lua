@@ -1,6 +1,32 @@
 local XiconPlateBuffs = LibStub("AceAddon-3.0"):GetAddon("XiconPlateBuffs")
 
 XiconPlateBuffs.trackedCrowdControl = {
+
+    ["interrupts"] = {
+        [GetSpellInfo(16979)] = {duration = 4, id = 16979, track = "debuff",}, -- Feral Charge (Druid)
+        [GetSpellInfo(2139)] = {duration = 8, id = 2139, track = "debuff",}, -- Counterspell (Mage)
+        [GetSpellInfo(1766)] = {duration = 5, id = 1766, track = "debuff",}, -- Kick (Rogue)
+        [GetSpellInfo(6552)] = {duration = 4, id = 6552, track = "debuff",}, -- Pummel (Warrior)
+        [GetSpellInfo(72)] = {duration = 6, id = 72, track = "debuff",}, -- Shield Bash (Warrior)
+        [GetSpellInfo(8042)] = {duration = 2, id = 8042, track = "debuff",}, -- Earth Shock (Shaman)
+        [GetSpellInfo(19244)] = {duration = 5, id = 19244, track = "debuff",}, -- Spell Lock
+    },
+    ["shortinterrupts"] = {
+        --Shaman
+        [GetSpellInfo(331)] = true, --Healing Wave
+        [GetSpellInfo(8004)] = true, -- Lesser Healing Wave
+        [GetSpellInfo(10622)] = true, -- Chain Heal
+        [GetSpellInfo(20609)] = true, -- Ancestral Spirit
+        --Paladin
+        [GetSpellInfo(635)] = true, --Holy Light
+        [GetSpellInfo(19750)] = true, -- Flash of Light
+        [GetSpellInfo(10322)] = true, -- Redemption
+        [GetSpellInfo(24274)] = true, -- Hammer of Wrath
+        [GetSpellInfo(2878)] = true, -- Turn Undead
+        [GetSpellInfo(27139)] = true, -- Holy Wrath
+        [GetSpellInfo(10326)] = true, -- Turn Evil
+    },
+
     -- Cyclone
     [GetSpellInfo(33786)] = {
         track = "debuff",
@@ -62,6 +88,8 @@ XiconPlateBuffs.trackedCrowdControl = {
         id = 22570,
     },
 
+
+    ---
 
     -- Innervate
     [GetSpellInfo(29166)] = {
@@ -409,8 +437,6 @@ XiconPlateBuffs.trackedCrowdControl = {
         priority = 15,
         spellSchool = "magic",
         id = 24259,
-        interrupt = 6,
-        interruptId = 1,
     },
     --[[
     -- Unstable Affliction
