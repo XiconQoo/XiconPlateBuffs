@@ -179,12 +179,15 @@ function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeL
     end
 end
 
-function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft)
+function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, interrupt)
     if trackedUnitNames[destName..destGUID] == nil then
         trackedUnitNames[destName..destGUID] = { debuff = {}, buff ={}}
     end
     local spellName, _, texture = GetSpellInfo(spellID)
     local duration = trackedCC[spellName] ~= nil and trackedCC[spellName].duration or 10
+    if interrupt and trackedCC[spellName].interrupt then
+        duration = trackedCC[spellName].interrupt
+    end
     local icon
     if #framePool > 0 then
         icon = tremove(framePool, 1)
@@ -203,7 +206,9 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft)
     icon:SetAlpha(0)
     icon.texture:SetTexture(texture)
     local color
-    if trackedCC[GetSpellInfo(spellID)].spellSchool == "magic" then
+    if interrupt then
+        color = XPB.db.profile.iconBorderColorInterrupt
+    elseif trackedCC[GetSpellInfo(spellID)].spellSchool == "magic" then
         color = XPB.db.profile.iconBorderColorMagic
     elseif trackedCC[GetSpellInfo(spellID)].spellSchool == "poison" then
         color = XPB.db.profile.iconBorderColorPoison
@@ -230,8 +235,8 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft)
     --icon.cooldowncircle:SetCooldown(GetTime(), timeLeft or duration)
 
     icon.endtime = calcEndTime(timeLeft or duration)
-    icon.spellName = spellName
-    icon.spellID = trackedCC[GetSpellInfo(spellID)].id
+    icon.spellName = interrupt and select(1, GetSpellInfo(trackedCC[GetSpellInfo(spellID)].interruptId)) or spellName
+    icon.spellID = interrupt and trackedCC[GetSpellInfo(spellID)].interruptId or trackedCC[GetSpellInfo(spellID)].id
     icon.destGUID = destGUID
     icon.destName = destName
     icon.trackType = trackedCC[GetSpellInfo(spellID)].track
@@ -557,6 +562,18 @@ function events:COMBAT_LOG_EVENT_UNFILTERED(...)
         local isGroundingTotem = tonumber(strsub(dstGUID,9,12), 16) == 5925 -- read unit id in dstGUID between 9th and 12th (hex to number)
         if isGroundingTotem then
             --print("Grounding Totem with guid " .. dstGUID .. " casted by " .. srcName)
+        end
+    end
+    if eventType == "SPELL_INTERRUPT" then
+        --print(eventType .. " - " .. (dstName and dstName.." dst" or srcName and srcName.." src"))
+        --print(spellName .. " - " .. spellID)
+        name = string.gsub(dstName, "%s+", "")
+        if (trackedCC[spellName] and trackedCC[spellName].interrupt) then
+            --XiconDebuffModule:addDebuff(name, dstGUID, spellID, timeLeft)
+            --print(eventType .. " - " .. (dstName and dstName.." dst" or srcName and srcName.." src"))
+            --print(spellName .. " - " .. spellID)
+            XiconDebuffModule:addDebuff(name, dstGUID, trackedCC[spellName].id, trackedCC[spellName].interrupt, true)
+            updateDebuffsOnUnitGUID(dstGUID)
         end
     end
     --print(eventType .. " - " .. (dstName and dstName.." dst" or srcName and srcName.." src"))

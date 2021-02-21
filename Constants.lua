@@ -409,6 +409,8 @@ XiconPlateBuffs.trackedCrowdControl = {
         priority = 15,
         spellSchool = "magic",
         id = 24259,
+        interrupt = 6,
+        interruptId = 1,
     },
     --[[
     -- Unstable Affliction

@@ -201,6 +201,7 @@ function XPB:CreateOptions()
             iconBorderColorPoison = DebuffTypeColor["poison"],
             iconBorderColorPhysical = DebuffTypeColor["none"],
             iconBorderColorImmune = DebuffTypeColor["immune"],
+            iconBorderColorInterrupt = DebuffTypeColor["none"],
             debuff = {
                 iconSize = 40,
                 iconBorder = "Interface\\AddOns\\XiconPlateBuffs\\media\\Border_rounded_blp",
