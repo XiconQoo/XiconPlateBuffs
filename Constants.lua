@@ -261,7 +261,7 @@ XiconPlateBuffs.trackedCrowdControl = {
     -- Divine Shield
     [GetSpellInfo(642)] = {
         track = "buff",
-        duration = 12,
+        duration = 8,
         priority = 20,
         spellSchool = "immune",
         id = 642,
