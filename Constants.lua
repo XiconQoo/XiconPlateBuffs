@@ -486,6 +486,15 @@ XiconPlateBuffs.trackedCrowdControl = {
         id = 23920,
     },
 
+    -- Shield Wall
+    [GetSpellInfo(871)] = {
+        track = "buff",
+        duration = 10,
+        priority = 10,
+        spellSchool = "physical",
+        id = 871,
+    },
+
     -- Mace Stun Effect
     [GetSpellInfo(5530)] = {
         track = "debuff",
