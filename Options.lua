@@ -205,9 +205,10 @@ function XPB:CreateOptions()
             iconBorderColorPoison = DebuffTypeColor["poison"],
             iconBorderColorPhysical = DebuffTypeColor["none"],
             iconBorderColorImmune = DebuffTypeColor["immune"],
+            iconBorderColorDisease = DebuffTypeColor["disease"],
             debuff = {
                 iconSize = 40,
-                iconPadding = 0,
+                iconPadding = 0.5,
                 iconBorder = "Interface\\AddOns\\XiconPlateBuffs\\media\\Border_rounded_blp",
                 iconBorderColor = {r = 1, g = 0, b = 0, a = 1},
                 fontSize = 15,
@@ -223,7 +224,7 @@ function XPB:CreateOptions()
             },
             buff = {
                 iconSize = 40,
-                iconPadding = 0,
+                iconPadding = 0.5,
                 iconBorder = "Interface\\AddOns\\XiconPlateBuffs\\media\\Border_rounded_blp",
                 iconBorderColor = {r = 0, g = 0, b = 0, a = 1},
                 fontSize = 15,
@@ -268,6 +269,7 @@ function XPB:CreateOptions()
                         set = function(info, value) self.db.profile.attachBuffsToDebuffs = value end,
                         get = function(info) return self.db.profile.attachBuffsToDebuffs end,
                         order = 2,
+                        width = "full",
                     },
                     enableInterruptIcons = {
                         name = "Enable Interrupt Durations",
@@ -276,6 +278,7 @@ function XPB:CreateOptions()
                         set = function(info, value) self.db.profile.enableInterruptIcons = value end,
                         get = function(info) return self.db.profile.enableInterruptIcons end,
                         order = 3,
+                        width = "full",
                     },
                     testButton = {
                         name = "Test",
@@ -283,6 +286,84 @@ function XPB:CreateOptions()
                         width = "half",
                         func = function() self.testMode = true end,
                         order = 1,
+                    },
+                    iconBorderColorCurse = {
+                        name = "Curse Color",
+                        desc = "Border Color for Spell School Curse",
+                        type = "color",
+                        order = 4,
+                        hasAlpha = true,
+                        get = function(info)
+                            return XPB.db.profile.iconBorderColorCurse.r, XPB.db.profile.iconBorderColorCurse.g, XPB.db.profile.iconBorderColorCurse.b, XPB.db.profile.iconBorderColorCurse.a
+                        end,
+                        set = function(info, r, g, b, a)
+                            XPB.db.profile.iconBorderColorCurse.r, XPB.db.profile.iconBorderColorCurse.g, XPB.db.profile.iconBorderColorCurse.b, XPB.db.profile.iconBorderColorCurse.a = r, g, b, a
+                        end,
+                    },
+                    iconBorderColorMagic = {
+                        name = "Magic Color",
+                        desc = "Border Color for Spell School Magic",
+                        type = "color",
+                        order = 5,
+                        hasAlpha = true,
+                        get = function(info)
+                            return XPB.db.profile.iconBorderColorMagic.r, XPB.db.profile.iconBorderColorMagic.g, XPB.db.profile.iconBorderColorMagic.b, XPB.db.profile.iconBorderColorMagic.a
+                        end,
+                        set = function(info, r, g, b, a)
+                            XPB.db.profile.iconBorderColorMagic.r, XPB.db.profile.iconBorderColorMagic.g, XPB.db.profile.iconBorderColorMagic.b, XPB.db.profile.iconBorderColorMagic.a = r, g, b, a
+                        end,
+                    },
+                    iconBorderColorPoison = {
+                        name = "Poison Color",
+                        desc = "Border Color for Spell School Poison",
+                        type = "color",
+                        order = 6,
+                        hasAlpha = true,
+                        get = function(info)
+                            return XPB.db.profile.iconBorderColorPoison.r, XPB.db.profile.iconBorderColorPoison.g, XPB.db.profile.iconBorderColorPoison.b, XPB.db.profile.iconBorderColorPoison.a
+                        end,
+                        set = function(info, r, g, b, a)
+                            XPB.db.profile.iconBorderColorPoison.r, XPB.db.profile.iconBorderColorPoison.g, XPB.db.profile.iconBorderColorPoison.b, XPB.db.profile.iconBorderColorPoison.a = r, g, b, a
+                        end,
+                    },
+                    iconBorderColorPhysical = {
+                        name = "Physical Color",
+                        desc = "Border Color for Spell School Physical",
+                        type = "color",
+                        order = 7,
+                        hasAlpha = true,
+                        get = function(info)
+                            return XPB.db.profile.iconBorderColorPhysical.r, XPB.db.profile.iconBorderColorPhysical.g, XPB.db.profile.iconBorderColorPhysical.b, XPB.db.profile.iconBorderColorPhysical.a
+                        end,
+                        set = function(info, r, g, b, a)
+                            XPB.db.profile.iconBorderColorPhysical.r, XPB.db.profile.iconBorderColorPhysical.g, XPB.db.profile.iconBorderColorPhysical.b, XPB.db.profile.iconBorderColorPhysical.a = r, g, b, a
+                        end,
+                    },
+                    iconBorderColorImmune = {
+                        name = "Immune Color",
+                        desc = "Border Color for Spell School Immune",
+                        type = "color",
+                        order = 8,
+                        hasAlpha = true,
+                        get = function(info)
+                            return XPB.db.profile.iconBorderColorImmune.r, XPB.db.profile.iconBorderColorImmune.g, XPB.db.profile.iconBorderColorImmune.b, XPB.db.profile.iconBorderColorImmune.a
+                        end,
+                        set = function(info, r, g, b, a)
+                            XPB.db.profile.iconBorderColorImmune.r, XPB.db.profile.iconBorderColorImmune.g, XPB.db.profile.iconBorderColorImmune.b, XPB.db.profile.iconBorderColorImmune.a = r, g, b, a
+                        end,
+                    },
+                    iconBorderColorDisease = {
+                        name = "Disease Color",
+                        desc = "Border Color for Spell School Disease",
+                        type = "color",
+                        order = 9,
+                        hasAlpha = true,
+                        get = function(info)
+                            return XPB.db.profile.iconBorderColorDisease.r, XPB.db.profile.iconBorderColorDisease.g, XPB.db.profile.iconBorderColorDisease.b, XPB.db.profile.iconBorderColorDisease.a
+                        end,
+                        set = function(info, r, g, b, a)
+                            XPB.db.profile.iconBorderColorDisease.r, XPB.db.profile.iconBorderColorDisease.g, XPB.db.profile.iconBorderColorDisease.b, XPB.db.profile.iconBorderColorDisease.a = r, g, b, a
+                        end,
                     },
                     debuff = {
                         name = "Debuffs",
@@ -694,7 +775,7 @@ function XPB:CreateOptions()
                         hidden = function(info) return not customSpell.id end,
                         type = "select",
                         width = "0.7",
-                        order = 5,
+                        order = 4,
                         values = {["debuff"] = "Debuff", ["buff"] = "Buff"},
                         get = function(info) return customSpell.track end,
                         set = function(info, value) customSpell.track = value end
@@ -704,13 +785,13 @@ function XPB:CreateOptions()
                         hidden = function(info) return not customSpell.id end,
                         type = "select",
                         width = "0.7",
-                        order = 6,
-                        values = {["magic"] = "Magic", ["physical"] = "Physical", ["poison"] = "Poison", ["curse"] = "Curse", ["immune"] = "Immune"},
+                        order = 5,
+                        values = {["magic"] = "Magic", ["physical"] = "Physical", ["poison"] = "Poison", ["curse"] = "Curse", ["immune"] = "Immune", ["disease"] = "Disease"},
                         get = function(info) return customSpell.spellSchool end,
                         set = function(info, value) customSpell.spellSchool = value end
                     },
                     add = {
-                        name = "Add",
+                        name = "Save",
                         hidden = function(info) return not customSpell.id end,
                         disabled = function(info) return not customSpell.id
                                 or not customSpell.duration
@@ -718,7 +799,7 @@ function XPB:CreateOptions()
                                 or not customSpell.spellSchool end,
                         type = "execute",
                         width = "0.5",
-                        order = 4,
+                        order = 6,
                         func = function(info)
                             local function insert(table)
                                 local exists

@@ -219,6 +219,8 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, inte
         color = XPB.db.profile.iconBorderColorPhysical
     elseif trackedCC[GetSpellInfo(spellID)].spellSchool == "immune" then
         color = XPB.db.profile.iconBorderColorImmune
+    elseif trackedCC[GetSpellInfo(spellID)].spellSchool == "disease" then
+        color = XPB.db.profile.iconBorderColorDisease
     else
         color = {r = 0, g = 0, b = 0, a = 1}
     end
