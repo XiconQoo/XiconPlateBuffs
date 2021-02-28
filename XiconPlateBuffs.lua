@@ -1,25 +1,55 @@
 local ADDON_NAME = "XiconPlateBuffs"
 local select, tonumber, tostring = select, tonumber, tostring
-local XiconPlateBuffsDB_local
-local XiconDebuffModule = GetXiconDebuffModuleModule()
+local XiconDebuffModule
+local VERSION = "v1.0-Release"
 
 local print = function(s)
     local str = s
-    if s == nil then str = "" end
+    if s == nil then str = "nil" end
+    if type(str) == "boolean" then
+        if str then
+            str = "true"
+        else
+            str = "false"
+        end
+    end
     DEFAULT_CHAT_FRAME:AddMessage("|cffa0f6aa[".. ADDON_NAME .."]|r: " .. str)
 end
 
 ---------------------------------------------------------------------------------------------
 
--- FRAME SETUP FOR REGISTER EVENTS
+-- CORE
 
 ---------------------------------------------------------------------------------------------
 
 local XiconPlateBuffs = CreateFrame("Frame", "XiconPlateBuffs", UIParent)
-XiconPlateBuffs:EnableMouse(false)
-XiconPlateBuffs:SetWidth(1)
-XiconPlateBuffs:SetHeight(1)
-XiconPlateBuffs:SetAlpha(0)
+LibStub("AceAddon-3.0"):NewAddon(XiconPlateBuffs, ADDON_NAME)
+XiconPlateBuffs.modules = {}
+
+function XiconPlateBuffs:OnInitialize()
+    self.knownNameplates = {}
+    self.numKnownNameplates = 0
+    self.Aloft = IsAddOnLoaded("Aloft")
+    self.SoHighPlates = IsAddOnLoaded("SoHighPlates")
+    self.ElvUI = IsAddOnLoaded("ElvUI")
+    self.ShaguPlates = IsAddOnLoaded("ShaguPlates-tbc") or IsAddOnLoaded("ShaguPlates")
+    XiconPlateBuffs:CreateOptions()
+    for _,module in pairs(self.modules) do
+        module:OnInitialize()
+    end
+    XiconDebuffModule = self.modules["XiconDebuffModule"]
+    LibStub("AceConsole-3.0"):RegisterChatCommand("xpb", function() LibStub("AceConfigDialog-3.0"):Open("XiconPlateBuffs") end)
+    LibStub("AceConsole-3.0"):RegisterChatCommand("xpbconfig", function() LibStub("AceConfigDialog-3.0"):Open("XiconPlateBuffs") end)
+    print(VERSION .. " loaded")
+    print("write /xpb or /xpbconfig for options")
+    print("look out for updates under https://github.com/XiconQoo/XiconPlateBuffs")
+end
+
+function XiconPlateBuffs:NewModule(name)
+    local module = CreateFrame("Frame", name)
+    self.modules[name] = module
+    return module
+end
 
 ---------------------------------------------------------------------------------------------
 
@@ -33,21 +63,30 @@ function table.removekey(table, key)
     return element
 end
 
-local function getName(namePlate)
+function XiconPlateBuffs:GetName(namePlate)
     local name
-    local _, _, _, _, eman, _, _ = namePlate:GetRegions()
-    if namePlate.aloftData then
-        name = namePlate.aloftData.name
-    elseif ElvUI then
-        name = namePlate.UnitFrame.oldName:GetText()
-    elseif sohighPlates then
-        --name = namePlate.name:GetText()
-        name = namePlate.oldname:GetText()
-    elseif strmatch(eman:GetText(), "%d") then
-        local _, _, _, _, _, nameRegion = namePlate:GetRegions()
-        name = nameRegion:GetText()
+    if self.Aloft then
+        if namePlate.aloftData then
+            name = namePlate.aloftData.name
+        end
+    elseif self.SoHighPlates then
+        if namePlate.oldname or namePlate.name then
+            name = (namePlate.oldname and namePlate.oldname:GetText()) or (namePlate.name and namePlate.name:GetText())
+        end
     else
-        name = eman:GetText()
+        if self.ElvUI then
+            if namePlate.UnitFrame then
+                name = namePlate.UnitFrame.oldName:GetText()
+            end
+        end
+        if not name then
+            local _, _, _, _, nameRegion1, nameRegion2 = namePlate:GetRegions()
+            if strmatch(nameRegion1:GetText(), "%d") then
+                name = nameRegion2:GetText()
+            else
+                name = nameRegion1:GetText()
+            end
+        end
     end
     return name
 end
@@ -60,43 +99,10 @@ end
 
 local events = {} -- store event functions to be assigned to reputation frame
 
-function events:ADDON_LOADED(...)
-    if select(1, ...) == ADDON_NAME then
-        XiconPlateBuffsDB_local = XiconPlateBuffsDB
-        if not XiconPlateBuffsDB_local then
-            XiconPlateBuffsDB_local = {}
-            XiconPlateBuffsDB_local["iconSize"] = 40
-            XiconPlateBuffsDB_local["yOffset"] = 15
-            XiconPlateBuffsDB_local["xOffset"] = 0
-            XiconPlateBuffsDB_local["fontSize"] = 15
-            XiconPlateBuffsDB_local["responsive"] = true
-            XiconPlateBuffsDB_local["sorting"] = 'ascending'
-            XiconPlateBuffsDB_local["alpha"] = 1.0
-            XiconPlateBuffsDB = XiconPlateBuffsDB_local
-        end
-        if not XiconPlateBuffsDB_local["iconSize"] then XiconPlateBuffsDB_local["iconSize"] = 40 end
-        if not XiconPlateBuffsDB_local["yOffset"] then XiconPlateBuffsDB_local["yOffset"] = 15 end
-        if not XiconPlateBuffsDB_local["xOffset"] then XiconPlateBuffsDB_local["xOffset"] = 0 end
-        if not XiconPlateBuffsDB_local["fontSize"] then XiconPlateBuffsDB_local["fontSize"] = 15 end
-        if XiconPlateBuffsDB_local["responsive"] == nil then XiconPlateBuffsDB_local["responsive"] = true end
-        if not XiconPlateBuffsDB_local["sorting"] then XiconPlateBuffsDB_local["sorting"] = 'ascending' end
-        if not XiconPlateBuffsDB_local["alpha"] then XiconPlateBuffsDB_local["alpha"] = 1.0 end
-        if not XiconPlateBuffsDB_local["font"] then XiconPlateBuffsDB_local["font"] = "Fonts\\ARIALN.ttf" end
-        if not XiconPlateBuffsDB_local["point"] then XiconPlateBuffsDB_local["point"] = "TOPLEFT" end
-        if not XiconPlateBuffsDB_local["relativePoint"] then XiconPlateBuffsDB_local["relativePoint"] = "LEFT" end
-        XiconPlateBuffs:CreateOptions()
-
-        XiconDebuffModule:Init(XiconPlateBuffsDB_local)
-        print("Loaded")
-        print("write /xpb or /xpbconfig for options")
-        XiconPlateBuffs:UnregisterEvent("ADDON_LOADED")
-    end
+function events:PLAYER_ENTERING_WORLD()
+    XiconPlateBuffs.numKnownNameplates = 0
+    XiconPlateBuffs.knownNameplates = {}
 end
-
-function events:PLAYER_LOGOUT(...)
-    XiconPlateBuffsDB = XiconPlateBuffsDB_local
-end
-
 
 ---------------------------------------------------------------------------------------------
 
@@ -117,260 +123,57 @@ end
 
 ---------------------------------------------------------------------------------------------
 
-local updateInterval, lastUpdate = .03, 0
-XiconPlateBuffs:SetScript("OnUpdate", function(_, elapsed)
+local NameplateFrame = CreateFrame("Frame")
+NameplateFrame:SetScript("OnUpdate", function(self, elapsed)
+    local num = WorldFrame:GetNumChildren()
+    if XiconPlateBuffs.numKnownNameplates < num then
+        XiconPlateBuffs.numKnownNameplates = num
+        for i = 1, num do
+            local namePlate = select(i, WorldFrame:GetChildren())
+            if namePlate:GetNumRegions() > 2 and namePlate:GetNumChildren() >= 1 and not XiconPlateBuffs.knownNameplates[namePlate] then
+                namePlate.xiconFrameLevel = i
+                XiconPlateBuffs.knownNameplates[namePlate] = true
+            end
+        end
+    end
+end)
+
+local updateInterval, lastUpdate = .01, 0
+XiconPlateBuffs:SetScript("OnUpdate", function(self, elapsed)
     lastUpdate = lastUpdate + elapsed
     if lastUpdate > updateInterval then
         -- do stuff
-        if NAMEPLATES_ON or XiconPlateBuffs.testMode then
-            local num = WorldFrame:GetNumChildren()
-            for i = 1, num do
-                local namePlate = select(i, WorldFrame:GetChildren())
-                if namePlate:GetNumRegions() > 2 and namePlate:GetNumChildren() >= 1 then
-                    if namePlate:IsVisible() then
-                        local name = getName(namePlate)
-                        namePlate.nameStr = name
-                        if XiconPlateBuffs.testMode then
-                            local dstGUID = "0x00001312031"
-                            XiconDebuffModule:addDebuff(name, dstGUID, 29166, 15) -- innervate
-                            XiconDebuffModule:addDebuff(name, dstGUID, 22570, 5) -- maim
-                            XiconDebuffModule:addDebuff(name, dstGUID, 14309, 8) -- freezing trap
-                            XiconDebuffModule:addDebuff(name, dstGUID, 12826, 5) -- polymorph
-                        end
-                        -- check if namePlate is target or mouseover
-                        local border, castborder, casticon, highlight, nameText, levelText, levelIcon, raidIcon = namePlate:GetRegions()
-                        local target = UnitExists("target") and namePlate:GetAlpha() == 1 or nil
-                        local mouseover = UnitExists("mouseover") and highlight:IsShown() or nil
-                        if target then
-                            XiconDebuffModule:updateNameplate("target", namePlate, name)
-                        elseif mouseover then
-                            XiconDebuffModule:updateNameplate("mouseover", namePlate, name)
-                        else
-                            XiconDebuffModule:assignDebuffs(name, namePlate, false)
-                        end
+        for namePlate,_ in pairs(self.knownNameplates) do
+            if namePlate:IsVisible() then
+                local name = XiconPlateBuffs:GetName(namePlate)
+                if name then
+                    if self.testMode then
+                        local dstGUID = "0x00001312031"
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 29166, 15) -- innervate
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 642, 12) -- divine shield
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 22570, 5) -- maim
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 14309, 8) -- freezing trap
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 12826, 5) -- polymorph
+                    end
+                    -- check if namePlate is target or mouseover
+                    local border, castborder, casticon, highlight, nameText, levelText, levelIcon, raidIcon = namePlate:GetRegions()
+                    local target = UnitExists("target") and namePlate:GetAlpha() == 1 or nil
+                    local mouseover = UnitExists("mouseover") and highlight:IsShown() or nil
+                    if target then
+                        XiconDebuffModule:updateNameplate("target", namePlate, name)
+                    elseif mouseover then
+                        XiconDebuffModule:updateNameplate("mouseover", namePlate, name)
+                    else
+                        XiconDebuffModule:assignDebuffs(name, namePlate, false)
                     end
                 end
+            else
+                XiconDebuffModule.hideIcons(namePlate)
             end
         end
-        XiconPlateBuffs.testMode = false
+        self.testMode = false
         -- end do stuff
         lastUpdate = 0;
     end
 end)
 
----------------------------------------------------------------------------------------------
-
--- INTERFACE OPTIONS
-
----------------------------------------------------------------------------------------------
-
-local function onEscapePressed(frame)
-    frame:SetText(frame.oldValue)
-    frame:ClearFocus()
-end
-
-local function onEnterPressed(frame)
-    frame.oldValue = frame:GetText()
-    frame:ClearFocus()
-end
-
-local function setEditBoxValue(frame, value)
-    frame:SetText(tostring(value))
-    frame:SetCursorPosition(0)
-    frame:ClearFocus()
-    frame.setFunc(frame)
-end
-
-local function onEnter(frame)
-    frame.oldValue = frame:GetText()
-end
-
-local function onLeave(frame)
-    frame:SetText(frame.oldValue)
-end
-
-local function createEditBox(name, parent, width, height, value, setFunc)
-    local editbox = CreateFrame("EditBox",parent:GetName()..name,parent,"InputBoxTemplate")
-    editbox:SetText(value)
-    editbox:SetCursorPosition(0)
-    editbox:SetHeight(height)
-    editbox:SetWidth(width)
-    editbox:SetAutoFocus(false)
-    editbox:SetScript("OnEditFocusGained", onEnter)
-    editbox:SetScript("OnEditFocusLost", onLeave)
-    editbox:SetScript("OnEnterPressed", onEnterPressed)
-    editbox:SetScript("OnEscapePressed", onEscapePressed)
-    editbox:HookScript("OnEnterPressed", setFunc)
-    editbox.setFunc = setFunc
-
-    local label = editbox:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
-    label:SetText(name)
-    label:SetPoint("BOTTOMLEFT", editbox, "TOPLEFT",-3,0)
-    return editbox
-end
-
-local XiconPlateBuffs_Options = LibStub("LibSimpleOptions-1.0")
-LibStub("LibSimpleOptions-1.0").AddSlashCommand("XiconPlateBuffs", "/xpb", "/xpbconfig")
-function XiconPlateBuffs:CreateOptions()
-    local panel = XiconPlateBuffs_Options.AddOptionsPanel("XiconPlateBuffs", function() end)
-    local i,option_toggles = 1, {}
-
-    local _,subText = panel:MakeTitleTextAndSubText("XiconPlateBuffs Addon", "General settings")
-
-    --- Test button option
-    local editBoxButton = panel:MakeButton(
-            'name', 'Test',
-            'description', 'Test',
-            'default', true,
-            'func', function() XiconPlateBuffs.testMode = true end)
-    local label = editBoxButton:CreateFontString(nil, "BACKGROUND", "GameFontNormal")
-    label:SetText("Test icons on nearby nameplates")
-    label:SetPoint("BOTTOMLEFT", editBoxButton, "TOPLEFT",-3,0)
-    editBoxButton:SetPoint("TOPLEFT",subText,"BOTTOMLEFT", 10, -15)
-    i = i + 1
-    option_toggles[i] = editBoxButton
-
-    --- icon size option
-    local iconSizeEditBox = createEditBox("Icon Size",panel,200,25,XiconPlateBuffsDB_local["iconSize"], function(frame)
-        if frame:GetText() then
-            local size = tonumber(frame:GetText())
-            if size and size > 0 then
-                XiconPlateBuffsDB_local["iconSize"] = size
-                XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
-            end
-        end
-    end)
-    iconSizeEditBox:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, -20)
-    i = i + 1
-    option_toggles[i] = iconSizeEditBox
-
-    --- font size option
-    local fontSizeEditBox = createEditBox("Font Size",panel,200,25,XiconPlateBuffsDB_local["fontSize"], function(frame)
-        if frame:GetText() then
-            local size = tonumber(frame:GetText())
-            if size and size > 0 then
-                XiconPlateBuffsDB_local["fontSize"] = size
-                XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
-            end
-        end
-    end)
-    fontSizeEditBox:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, -10)
-    i = i + 1
-    option_toggles[i] = fontSizeEditBox
-
-    --- y offset option
-    local yOffsetEditBox = createEditBox("Vertical Offset",panel,200,25,XiconPlateBuffsDB_local["yOffset"], function(frame)
-        if frame:GetText() then
-            local offset = tonumber(frame:GetText())
-            if offset then
-                XiconPlateBuffsDB_local["yOffset"] = offset
-                XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
-            end
-        end
-    end)
-    yOffsetEditBox:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, -10)
-    i = i + 1
-    option_toggles[i] = yOffsetEditBox
-
-    --- x offset option
-    local xOffsetEditBox = createEditBox("Horizontal Offset",panel,200,25,XiconPlateBuffsDB_local["xOffset"], function(frame)
-        if frame:GetText() then
-            local offset = tonumber(frame:GetText())
-            if offset then
-                XiconPlateBuffsDB_local["xOffset"] = offset
-                XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
-            end
-        end
-    end)
-    xOffsetEditBox:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, -10)
-    i = i + 1
-    option_toggles[i] = xOffsetEditBox
-
-    --- alpha option
-    local alphaEditBox = createEditBox("Alpha (1.0 is 100%, 0.0 is invisible)",panel,200,25,XiconPlateBuffsDB_local["alpha"], function(frame)
-        if frame:GetText() then
-            local alpha = tonumber(frame:GetText())
-            if alpha and alpha <= 1.0 then
-                XiconPlateBuffsDB_local["alpha"] = alpha
-                XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
-            end
-        end
-    end)
-    alphaEditBox:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, -10)
-    i = i + 1
-    option_toggles[i] = alphaEditBox
-
-    --- responsiveness option
-    local responsiveToggle = panel:MakeToggle(
-            'name', 'Resize Icons Responsively',
-            'description', 'Resize Icons responsively',
-            'default', true,
-            'getFunc', function() return XiconPlateBuffsDB_local["responsive"] end,
-            'setFunc', function(value)
-                XiconPlateBuffsDB_local["responsive"] = value
-                XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
-            end)
-    responsiveToggle:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", -5, 0)
-    i = i + 1
-    option_toggles[i] = responsiveToggle
-
-    --- sorting option
-    local sortingDropdown = panel:MakeDropDown(
-            'name', 'Sort Icons',
-            'description', 'Specify sorting method',
-            'values', {
-                'none', "None",
-                'ascending', "Ascending",
-                'descending', "Descending",
-            },
-            'default', 'none',
-            'getFunc', function() return XiconPlateBuffsDB_local["sorting"] end,
-            'setFunc', function(value)
-                XiconPlateBuffsDB_local["sorting"] = value
-                XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
-            end)
-    sortingDropdown:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", -15, -15)
-    i = i + 1
-    option_toggles[i] = sortingDropdown
-
-    --- font option
-    local fontDropdown = panel:MakeDropDown(
-            'name', 'Cooldown Font',
-            'description', 'Choose a Font',
-            'values', {
-                "Fonts\\ARIALN.ttf", "Arial",
-                "Fonts\\FRIZQT__.ttf", "Fritz Quadrata",
-                "Fonts\\MORPHEUS.ttf", "Morpheus",
-                "Fonts\\skurri.ttf", "Skurri",
-            },
-            'default', "Fonts\\ARIALN.ttf",
-            'getFunc', function() return XiconPlateBuffsDB_local["font"] end,
-            'setFunc', function(value)
-                if value then
-                    XiconPlateBuffsDB_local["font"] = value
-                    XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
-                end
-            end)
-    fontDropdown:SetPoint("TOPLEFT",sortingDropdown,"TOPRIGHT", 0, 0)
-    --i = i + 1
-    --option_toggles[i] = sortingDropdown
-
-    --- default settings button
-    local defaultSettingsButton = panel:MakeButton(
-            'name', 'Default Settings',
-            'description', 'Default Settings',
-            'default', true,
-            'func', function()
-                setEditBoxValue(iconSizeEditBox, 40)
-                setEditBoxValue(fontSizeEditBox,15)
-                setEditBoxValue(yOffsetEditBox, 15)
-                setEditBoxValue(xOffsetEditBox,0)
-                setEditBoxValue(alphaEditBox, 1.0)
-                responsiveToggle.SetValue(responsiveToggle, true)
-                sortingDropdown.SetValue(sortingDropdown, 'ascending')
-                XiconDebuffModule:UpdateSavedVariables(XiconPlateBuffsDB_local)
-            end)
-    defaultSettingsButton:SetPoint("TOPLEFT",option_toggles[i],"BOTTOMLEFT", 0, 0)
-    i = i + 1
-    option_toggles[i] = defaultSettingsButton
-end

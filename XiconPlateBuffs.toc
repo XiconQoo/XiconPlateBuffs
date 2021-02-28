@@ -1,14 +1,13 @@
 ## Interface: 20400
 ## Title: |cffa0f6aaXiconPlateBuffs|r
-## Notes: Show CC on Nameplates for TBC 2.4.3
+## Notes: Show Buffs and Debuffs on Nameplates for TBC 2.4.3
 ## Author: XiCoN-Knall-
-## Version: 1.6.4-Beta
-## SavedVariablesPerCharacter: XiconPlateBuffsDB
+## Version: 1.0-Release
+## SavedVariables: XiconPlateBuffsDB
 
-lib\LibSimpleOptions-1.0\lib.xml
-lib\LibStub\LibStub.lua
+libs.xml
 
-
-Constants.lua
-XiconDebuffModule.lua
 XiconPlateBuffs.lua
+XiconDebuffModule.lua
+Constants.lua
+Options.lua
