@@ -1,12 +1,14 @@
 # XiconPlateBuffs TBC Addon
 
-### [v1.6.4-Beta Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.6.4-Beta/XiconPlateBuffs_v1.6.4-Beta.zip)
+### [v1.0-Release Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.0-Release/XiconPlateBuffs_v1.0-Release.zip)
 
 #### Recommended addons to use with XiconPlateBuffs
 
 #### - [BuffLib](https://github.com/Schaka/BuffLib/releases/download/v1.1.1/BuffLib.zip)
 
 XiconPlateBuffs's goal is to accurately show CC in Arena/BG on any nameplate, without the need to hover/target/interact with the nameplate or the nameplate even beeing visible when CC was applied.
+
+You can enable/disable a preset of buff or debuffs in the options or add missing buffs/debuffs you want to track.
 
 This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
 
@@ -15,6 +17,21 @@ This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
 ![Screenshot](../readme-media/sample.png)
 
 ### Changes
+
+v1.0-Release
+- /xpb or /xpbconfig opens own config window
+- buffs separated from debuffs
+- enable/disable spells
+- add custom spells option added
+- add interrupt duration icons (with border color for spellschool locked)
+- align buffs/debuffs anywhere
+- border added
+- border color by spellSchool
+- padding between icons option added
+- libs updated
+- bugfixes on icons hiding
+- no overlap of icons anymore
+- fix ElvUI bug with using different nameplate addon
 
 v1.6.4-Beta (hotfix)
 - revert isNameplate function

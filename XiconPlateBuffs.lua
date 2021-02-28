@@ -1,6 +1,7 @@
 local ADDON_NAME = "XiconPlateBuffs"
 local select, tonumber, tostring = select, tonumber, tostring
 local XiconDebuffModule
+local VERSION = "v1.0-Release"
 
 local print = function(s)
     local str = s
@@ -39,8 +40,9 @@ function XiconPlateBuffs:OnInitialize()
     XiconDebuffModule = self.modules["XiconDebuffModule"]
     LibStub("AceConsole-3.0"):RegisterChatCommand("xpb", function() LibStub("AceConfigDialog-3.0"):Open("XiconPlateBuffs") end)
     LibStub("AceConsole-3.0"):RegisterChatCommand("xpbconfig", function() LibStub("AceConfigDialog-3.0"):Open("XiconPlateBuffs") end)
-    print("Loaded")
+    print(VERSION .. " loaded")
     print("write /xpb or /xpbconfig for options")
+    print("look out for updates under https://github.com/XiconQoo/XiconPlateBuffs")
 end
 
 function XiconPlateBuffs:NewModule(name)
