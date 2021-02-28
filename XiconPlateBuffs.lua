@@ -129,6 +129,7 @@ NameplateFrame:SetScript("OnUpdate", function(self, elapsed)
         for i = 1, num do
             local namePlate = select(i, WorldFrame:GetChildren())
             if namePlate:GetNumRegions() > 2 and namePlate:GetNumChildren() >= 1 and not XiconPlateBuffs.knownNameplates[namePlate] then
+                namePlate.xiconFrameLevel = i
                 XiconPlateBuffs.knownNameplates[namePlate] = true
             end
         end
@@ -142,9 +143,8 @@ XiconPlateBuffs:SetScript("OnUpdate", function(self, elapsed)
         -- do stuff
         for namePlate,_ in pairs(self.knownNameplates) do
             if namePlate:IsVisible() then
-                local name = self:GetName(namePlate)
+                local name = XiconPlateBuffs:GetName(namePlate)
                 if name then
-                    namePlate.nameStr = name
                     if self.testMode then
                         local dstGUID = "0x00001312031"
                         XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 29166, 15) -- innervate
@@ -161,9 +161,12 @@ XiconPlateBuffs:SetScript("OnUpdate", function(self, elapsed)
                         XiconDebuffModule:updateNameplate("target", namePlate, name)
                     elseif mouseover then
                         XiconDebuffModule:updateNameplate("mouseover", namePlate, name)
+                    else
+                        XiconDebuffModule:assignDebuffs(name, namePlate, false)
                     end
-                    XiconDebuffModule:assignDebuffs(name, namePlate, false)
                 end
+            else
+                XiconDebuffModule.hideIcons(namePlate)
             end
         end
         self.testMode = false
