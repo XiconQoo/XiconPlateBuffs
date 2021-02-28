@@ -139,11 +139,10 @@ end
 
 function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeLeft)
     destName = string.gsub(destName, "%s+", "")
-    local spellName = GetSpellInfo(spellID)
     local found
     if trackedUnitNames[destName..destGUID] then
         for i = 1, #trackedUnitNames[destName..destGUID].buff do
-            if trackedUnitNames[destName..destGUID].buff[i] and trackedUnitNames[destName..destGUID].buff[i].spellName == spellName then
+            if trackedUnitNames[destName..destGUID].buff[i] and trackedUnitNames[destName..destGUID].buff[i].spellID == spellID then
                 --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(GetTime(), timeLeft or trackedCC[spellName].duration)
                 if timeLeft then
                     trackedUnitNames[destName..destGUID].buff[i].endtime = calcEndTime(timeLeft)
@@ -158,7 +157,7 @@ function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeL
         end
         if not found then
             for i = 1, #trackedUnitNames[destName..destGUID].debuff do
-                if trackedUnitNames[destName..destGUID].debuff[i] and trackedUnitNames[destName..destGUID].debuff[i].spellName == spellName then
+                if trackedUnitNames[destName..destGUID].debuff[i] and trackedUnitNames[destName..destGUID].debuff[i].spellID == spellID then
                     --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(GetTime(), timeLeft or trackedCC[spellName].duration)
                     if timeLeft then
                         trackedUnitNames[destName..destGUID].debuff[i].endtime = calcEndTime(timeLeft)
@@ -306,8 +305,14 @@ local function addIcons(dstName, namePlate, force)
     local sizeDebuff, fontSizeDebuff = calcResponsive(XPB.db.profile.debuff["responsive"], XPB.db.profile.debuff["responsiveMax"], XPB.db.profile.debuff["iconSize"], XPB.db.profile.debuff["fontSize"], numDebuffs)
     local x, y = 0,0
 
+    --reassignment release old nameplate
+    if (trackedUnitNames[dstName].parent and trackedUnitNames[dstName].parent ~= namePlate) then
+        XiconDebuffModule.hideIcons(trackedUnitNames[dstName].parent)
+    end
+
     for i = 1, #trackedUnitNames[dstName].debuff do
         trackedUnitNames[dstName].debuff[i]:SetParent(namePlate)
+        trackedUnitNames[dstName].debuff[i]:SetFrameLevel(namePlate.xiconFrameLevel)
         trackedUnitNames[dstName].debuff[i]:SetFrameStrata(force and "LOW" or "BACKGROUND")
         trackedUnitNames[dstName].debuff[i]:ClearAllPoints()
         trackedUnitNames[dstName].debuff[i]:SetWidth(sizeDebuff)
@@ -339,6 +344,7 @@ local function addIcons(dstName, namePlate, force)
 
     for i = 1, #trackedUnitNames[dstName].buff do
         trackedUnitNames[dstName].buff[i]:SetParent(namePlate)
+        trackedUnitNames[dstName].buff[i]:SetFrameLevel(namePlate.xiconFrameLevel)
         trackedUnitNames[dstName].buff[i]:SetFrameStrata(force and "LOW" or "BACKGROUND")
         trackedUnitNames[dstName].buff[i]:ClearAllPoints()
         trackedUnitNames[dstName].buff[i]:SetWidth(sizeBuff)
@@ -383,27 +389,40 @@ local function addIcons(dstName, namePlate, force)
     end
 end
 
-local function hideIcons(namePlate, dstName)
+function XiconDebuffModule.hideIcons(namePlate, dstName, force)
     if namePlate then -- OnHide or just remove icons
-        if not dstName and namePlate.XiconGUID then -- OnHide
+        if not force and not dstName and (namePlate.XiconGUID or namePlate.guessedGUID) then -- OnHide or not visible
             namePlate.XiconGUID = nil
             namePlate.guessedGUID = nil
         end
         namePlate.xiconPlateActive = nil
-        local kids = { namePlate:GetChildren() };
-        for _, child in ipairs(kids) do
-            if child.destGUID then
-                for i = 1, #trackedUnitNames[child.destName .. child.destGUID].buff do
-                    hideOrRemoveIconFromList(trackedUnitNames[child.destName .. child.destGUID].buff, i, false)
+        if (force and dstName) then
+            for i = 1, #trackedUnitNames[dstName].buff do
+                hideOrRemoveIconFromList(trackedUnitNames[dstName].buff, i, false)
+            end
+            for i = 1, #trackedUnitNames[dstName].debuff do
+                hideOrRemoveIconFromList(trackedUnitNames[dstName].debuff, i, false)
+            end
+            if trackedUnitNames[dstName].parent then
+                trackedUnitNames[dstName].parent.xiconPlateActive = nil
+            end
+            trackedUnitNames[dstName].parent = nil
+        else
+            local kids = { namePlate:GetChildren() };
+            for _, child in ipairs(kids) do
+                if child.destGUID then
+                    for i = 1, #trackedUnitNames[child.destName .. child.destGUID].buff do
+                        hideOrRemoveIconFromList(trackedUnitNames[child.destName .. child.destGUID].buff, i, false)
+                    end
+                    for i = 1, #trackedUnitNames[child.destName .. child.destGUID].debuff do
+                        hideOrRemoveIconFromList(trackedUnitNames[child.destName .. child.destGUID].debuff, i, false)
+                    end
+                    if trackedUnitNames[child.destName .. child.destGUID].parent then
+                        trackedUnitNames[child.destName .. child.destGUID].parent.xiconPlateActive = nil
+                    end
+                    trackedUnitNames[child.destName .. child.destGUID].parent = nil
+                    break
                 end
-                for i = 1, #trackedUnitNames[child.destName .. child.destGUID].debuff do
-                    hideOrRemoveIconFromList(trackedUnitNames[child.destName .. child.destGUID].debuff, i, false)
-                end
-                if trackedUnitNames[child.destName .. child.destGUID].parent then
-                    trackedUnitNames[child.destName .. child.destGUID].parent.xiconPlateActive = nil
-                end
-                trackedUnitNames[child.destName .. child.destGUID].parent = nil
-                break
             end
         end
     elseif not namePlate and dstName then -- UNIT_DIED
@@ -445,20 +464,11 @@ local function updateDebuffsOnUnit(unit, event)
                 end
             end
         end
-        --safe delete debuff if not exists
-        --[[if trackedUnitNames[unitName..unitGUID] then
-            for i = 1, #trackedUnitNames[unitName..unitGUID].debuff do
-                if trackedUnitNames[unitName..unitGUID].debuff[i] and not debuffs[trackedUnitNames[unitName..unitGUID].debuff[i].spellName] then
-                    print("Remove debuff " .. trackedUnitNames[unitName..unitGUID].debuff[i].spellName)
-                    removeDebuff(unitName, unitGUID, trackedCC[trackedUnitNames[unitName..unitGUID].debuff[i].spellName].id)
-                end
-            end
-        end--]]
         local buffs = {}
         for i = 1, 40 do
             local spellName, _, _, _, duration, timeLeft,isMine,isStealable,shouldConsolidate,spellId = UnitBuff(unit, i)
             if not spellName then break end
-            if trackedCC[spellName] and (timeLeft or event == "UNIT_AURA") then
+            if trackedCC[spellName] and timeLeft then
                 buffs[spellName] = true
                 --update buff durations
                 if timeLeft then
@@ -466,20 +476,9 @@ local function updateDebuffsOnUnit(unit, event)
                     if timeLeft > 0.5 then
                         XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, unitName, unitGUID, duration, timeLeft, "enemy"))
                     end
-                elseif event == "UNIT_AURA" then
-                    XiconDebuffModule:addOrRefreshDebuff(unitName, unitGUID, trackedCC[spellName].id, trackedCC[spellName].duration, true)
-                    XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, unitName, unitGUID, trackedCC[spellName].duration, trackedCC[spellName].duration, "enemy"))
                 end
             end
         end
-        --safe delete buff if not exists
-        --[[if trackedUnitNames[unitName..unitGUID] then
-            for i = 1, #trackedUnitNames[unitName..unitGUID].buff do
-                if trackedUnitNames[unitName..unitGUID].buff[i] and not buffs[trackedUnitNames[unitName..unitGUID].buff[i].name] then
-                    removeDebuff(unitName, unitGUID, trackedUnitNames[unitName..unitGUID].buff[i].id)
-                end
-            end
-        end--]]
     end
 end
 
@@ -494,10 +493,10 @@ local function updateDebuffsOnNameplate(name, namePlate, force)
     if trackedUnitNames[name] then
         addIcons(name, namePlate, force)
         if not namePlate:GetScript("OnHide") then
-            namePlate:SetScript("OnHide", hideIcons)
+            namePlate:SetScript("OnHide", XiconDebuffModule.hideIcons)
             namePlate.xiconPlateHooked = true
         elseif not namePlate.xiconPlateHooked then
-            namePlate:HookScript("OnHide", hideIcons)
+            namePlate:HookScript("OnHide", XiconDebuffModule.hideIcons)
             namePlate.xiconPlateHooked = true
         end
         if trackedUnitNames[name].parent then
@@ -511,10 +510,11 @@ end
 function XiconDebuffModule:assignDebuffs(dstName, namePlate, force)
     dstName = string.gsub(dstName, "%s+", "")
     local name
-    if force and namePlate.XiconGUID then -- we know the nameplates guid here
+    if force and namePlate.XiconGUID then -- we def know the nameplates guid here
         name = dstName .. namePlate.XiconGUID() -- record to look for
         if trackedUnitNames[name] == nil then -- force wipe debuffs if no record, else record will show on this nameplate
-            hideIcons(namePlate, dstName)
+            XiconDebuffModule.hideIcons(namePlate, dstName)
+            name = nil
         end
     else
         -- find unit with unknown guid, same name and hidden active debuffs in trackedUnitNames
@@ -525,7 +525,7 @@ function XiconDebuffModule:assignDebuffs(dstName, namePlate, force)
                     local kids = { namePlate:GetChildren() };
                     for _, child in ipairs(kids) do
                         if child.destGUID and child.destGUID ~= splitStr[2] then
-                            hideIcons(namePlate, dstName)
+                            XiconDebuffModule.hideIcons(namePlate, child.destName .. child.destGUID, force)
                             break
                         elseif child.destGUID then
                             break
@@ -533,18 +533,18 @@ function XiconDebuffModule:assignDebuffs(dstName, namePlate, force)
                     end
                 end
                 name = k
-                break
             elseif not namePlate.xiconPlateActive and not trackedUnitNames[k].parent and not namePlate.XiconGUID and splitStr[1] == dstName then
-                -- wild guess in pve, accurate in pvp
+                -- wild guess in pve, accurate in pvp: same name, inactive plate, debuffs not assigned yet
                 namePlate.guessedGUID = function() return splitStr[2] end
                 name = k
-                break
+                --break
             elseif namePlate.xiconPlateActive and trackedUnitNames[k].parent == namePlate and not namePlate.XiconGUID and splitStr[1] == dstName then
-                -- still wild guess but active, we update here nonetheless, accurate in pvp
+                -- still wild guess, we update here nonetheless, accurate in pvp: active plate, debuffs were assigned to that plate, unknown GUID, guid was guessed
                 name = k
-                break
-            elseif namePlate.xiconPlateActive and not namePlate.guessedGUID then
-                hideIcons(namePlate, k)
+                --break
+            elseif ((namePlate.XiconGUID and splitStr[2] ~= namePlate.XiconGUID()) or (namePlate.guessedGUID and namePlate.guessedGUID() ~= splitStr[2])) then
+                --save hide icons on nameplate with wrong guid (real or guessed)
+                XiconDebuffModule.hideIcons(namePlate, k)
             end
         end
     end
@@ -557,6 +557,10 @@ end
 function XiconDebuffModule:updateNameplate(unit, plate, unitName)
     local guid = UnitGUID(unit)
     local plateGUID = plate.XiconGUID
+    if plate.guessedGUID and plate.xiconPlateActive and plate.guessedGUID() ~= guid then
+        XiconDebuffModule.hideIcons(plate, nil, true)
+        plate.guessedGUID = function() return guid end
+    end
     if guid and not plateGUID then
         plate.XiconGUID = function() return guid end
     elseif guid and plateGUID and guid ~= plateGUID() then
@@ -613,7 +617,7 @@ function events:COMBAT_LOG_EVENT_UNFILTERED(...)
     end
     if eventType == "SPELL_INTERRUPT" then
         name = string.gsub(dstName, "%s+", "")
-        if (trackedCC.interrupts[spellName]) then
+        if (trackedCC.interrupts[spellName] and XPB.db.profile.enableInterruptIcons) then
             local multiplier = 1
             if trackedCC.shortinterrupts[extraSpellName] then
                 multiplier = 0.7
@@ -632,25 +636,24 @@ function events:COMBAT_LOG_EVENT_UNFILTERED(...)
     if dstIsEnemy and (trackedCC[spellName]) then
         --print(eventType .. " - " ..spellName)
         if eventType == "SPELL_AURA_APPLIED" or eventType == "SPELL_AURA_REFRESH" then
-            --print(eventType .. " - " .. spellName .. " - " .. spellID)
             name = string.gsub(dstName, "%s+", "")
-            XiconDebuffModule:addOrRefreshDebuff(name, dstGUID, spellID)
+            XiconDebuffModule:addOrRefreshDebuff(name, dstGUID, trackedCC[spellName].id)
             XiconDebuffModule:SendMessage(string.format(eventType .. ":%s,%s,%s,%s,%s,%s,%s", spellID, spellName, name, dstGUID, "nil", "nil", "enemy"))
             updateDebuffsOnUnitGUID(dstGUID)
         end
     end
     if (srcIsEnemy or dstIsEnemy) and trackedCC[spellName] then
-        if (eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL") then
+        if (eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL" or eventType == "SPELL_AURA_STOLEN") then
             --print(eventType .. " - " .. spellName .. " - " .. dstName .. (dstIsEnemy and " - dst" or srcIsEnemy and " - src"))
             name = string.gsub(dstName, "%s+", "")
-            removeDebuff(name, dstGUID, spellID)
+            removeDebuff(name, dstGUID, trackedCC[spellName].id)
             XiconDebuffModule:SendMessage(string.format(eventType .. ":%s,%s,%s,%s,%s,%s,%s", spellID, spellName, name, dstGUID, "nil", "nil", "enemy"))
         end
     end
-    if dstIsEnemy and eventType == "UNIT_DIED" then
+    if dstIsEnemy and (eventType == "UNIT_DIED" or eventType == "UNIT_DESTROYED" or eventType == "PARTY_KILL") then
         name = string.gsub(dstName or srcName, "%s+", "")
         if trackedUnitNames[name..dstGUID] then
-            hideIcons(nil, name..dstGUID)
+            XiconDebuffModule.hideIcons(nil, name..dstGUID)
             trackedUnitNames[name..dstGUID] = nil
             XiconDebuffModule:SendMessage(string.format(eventType .. ":%s,%s,%s,%s,%s,%s,%s", "nil", "nil", name, dstGUID, "nil", "nil", "enemy"))
         end
@@ -675,26 +678,21 @@ end
 
 -- Catch syncs
 function events:CHAT_MSG_ADDON(prefix, msg, type, author)
-    if( (prefix == "PCCT2" or prefix == "XICON1") and author ~= UnitName("player")  ) then
+    if( (prefix == "PCCT2" or prefix == "XICON1") and author ~= UnitName("player") ) then
         local eventType, data = string.match(msg, "(.+)%:(.+)")
         local spellID, spellName, destName, destGUID, duration, timeLeft, playerType = string.split(",", data)
         duration = tonumber(duration)
         timeLeft = tonumber(timeLeft)
         spellID = tonumber(spellID)
-        --print(eventType .. " - " .. msg)
         if( eventType == "SPELL_AURA_APPLIED" ) then
-            --print(eventType .. " - " .. author .. " - " .. data)
             XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeLeft)
         elseif( eventType == "SPELL_AURA_REFRESH" ) then
-            --print(eventType .. " - " .. author .. " - " .. data)
             XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeLeft)
         elseif( eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL" ) then
-            --print(eventType .. " - " .. author .. " - " .. data)
             removeDebuff(destName, destGUID, spellID)
         elseif eventType == "UNIT_DIED" then
-            --print(eventType .. " - " .. author .. " - " .. data)
             if trackedUnitNames[destName..destGUID] then
-                hideIcons(nil, destName..destGUID)
+                XiconDebuffModule.hideIcons(nil, destName..destGUID)
                 trackedUnitNames[destName..destGUID] = nil
             end
         end
