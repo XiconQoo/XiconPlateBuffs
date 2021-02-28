@@ -240,7 +240,8 @@ function XPB:CreateOptions()
             customBuffs = {},
             customDebuffs = {},
             attachBuffsToDebuffs = true,
-            trackedCC = defaultTrackedCC
+            trackedCC = defaultTrackedCC,
+            enableInterruptIcons = true,
         }
     }
     self.db = LibStub("AceDB-3.0"):New("XiconPlateBuffsDB", defaults)
@@ -262,15 +263,26 @@ function XPB:CreateOptions()
                 args = {
                     attachBuffsToDebuffs = {
                         name = "Attach Buffs to Debuffs",
+                        desc = "Attach Buffs to Debuffs",
                         type = "toggle",
                         set = function(info, value) self.db.profile.attachBuffsToDebuffs = value end,
                         get = function(info) return self.db.profile.attachBuffsToDebuffs end,
+                        order = 2,
+                    },
+                    enableInterruptIcons = {
+                        name = "Enable Interrupt Durations",
+                        desc = "Enables Interrupt Durations",
+                        type = "toggle",
+                        set = function(info, value) self.db.profile.enableInterruptIcons = value end,
+                        get = function(info) return self.db.profile.enableInterruptIcons end,
+                        order = 3,
                     },
                     testButton = {
                         name = "Test",
                         type = "execute",
                         width = "half",
-                        func = function() self.testMode = true end
+                        func = function() self.testMode = true end,
+                        order = 1,
                     },
                     debuff = {
                         name = "Debuffs",
