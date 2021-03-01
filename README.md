@@ -20,6 +20,8 @@ This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
 
 v1.0.1-Release
 - add button to blizz options to open own config gui
+- add center lock optiojn for buffs/debuffs
+- add TOP and BOTTOM anchors (optimal for center lock)
 - fix overwrite GetName()
 
 v1.0-Release
