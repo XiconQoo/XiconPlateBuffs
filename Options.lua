@@ -851,6 +851,20 @@ function XPB:CreateOptions()
         },
     }
 
+    local options = {
+        name = "XiconPlateBuffs",
+        type = "group",
+        args = {
+            load = {
+                name = "Load configuration",
+                desc = "Load configuration options",
+                type = "execute",
+                func = function() LibStub("AceConfigDialog-3.0"):Open("XiconPlateBuffs") end,
+            },
+        },
+    }
+
+    LibStub("AceConfig-3.0"):RegisterOptionsTable("XiconPlateBuffs_blizz", options)
+    LibStub("AceConfigDialog-3.0"):AddToBlizOptions("XiconPlateBuffs_blizz", "XiconPlateBuffs")
     LibStub("AceConfig-3.0"):RegisterOptionsTable("XiconPlateBuffs", self.options)
-    LibStub("AceConfigDialog-3.0"):AddToBlizOptions("XiconPlateBuffs", "XiconPlateBuffs")
 end
