@@ -1,7 +1,7 @@
 local ADDON_NAME = "XiconPlateBuffs"
 local select, tonumber, tostring = select, tonumber, tostring
 local XiconDebuffModule
-local VERSION = "v1.0-Release"
+local VERSION = "v1.0.1-Release"
 
 local print = function(s)
     local str = s
@@ -63,7 +63,7 @@ function table.removekey(table, key)
     return element
 end
 
-function XiconPlateBuffs:GetName(namePlate)
+function XiconPlateBuffs:GetNamePlateName(namePlate)
     local name
     if self.Aloft then
         if namePlate.aloftData then
@@ -145,15 +145,16 @@ XiconPlateBuffs:SetScript("OnUpdate", function(self, elapsed)
         -- do stuff
         for namePlate,_ in pairs(self.knownNameplates) do
             if namePlate:IsVisible() then
-                local name = XiconPlateBuffs:GetName(namePlate)
+                local name = self:GetNamePlateName(namePlate)
                 if name then
                     if self.testMode then
                         local dstGUID = "0x00001312031"
                         XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 29166, 15) -- innervate
                         XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 642, 12) -- divine shield
-                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 22570, 5) -- maim
-                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 14309, 8) -- freezing trap
-                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 12826, 5) -- polymorph
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 22570, 3) -- maim
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 25274, 6) -- Intercept Stun
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 14309, 9) -- freezing trap
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 12826, 12) -- polymorph
                     end
                     -- check if namePlate is target or mouseover
                     local border, castborder, casticon, highlight, nameText, levelText, levelIcon, raidIcon = namePlate:GetRegions()
