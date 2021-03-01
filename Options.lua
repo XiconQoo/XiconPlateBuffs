@@ -221,7 +221,7 @@ function XPB:CreateOptions()
                 sorting = "ascending",
                 anchor = { self = "BOTTOMLEFT", nameplate = "TOPLEFT" },
                 growDirection = { self = "LEFT", icon = "RIGHT" },
-                center = true,
+                center = false,
             },
             buff = {
                 iconSize = 40,
@@ -238,7 +238,7 @@ function XPB:CreateOptions()
                 sorting = "ascending",
                 anchor = { self = "BOTTOMLEFT", nameplate = "TOPLEFT" },
                 growDirection = { self = "LEFT", icon = "RIGHT" },
-                center = true,
+                center = false,
             },
             customBuffs = {},
             customDebuffs = {},
