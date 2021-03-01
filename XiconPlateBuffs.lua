@@ -1,7 +1,7 @@
 local ADDON_NAME = "XiconPlateBuffs"
 local select, tonumber, tostring = select, tonumber, tostring
 local XiconDebuffModule
-local VERSION = "v1.0-Release"
+local VERSION = "v1.0.1-Release"
 
 local print = function(s)
     local str = s
