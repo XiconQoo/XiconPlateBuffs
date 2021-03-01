@@ -312,6 +312,14 @@ local function addIcons(dstName, namePlate, force)
         XiconDebuffModule.hideIcons(trackedUnitNames[dstName].parent)
     end
 
+    local xCenterDebuff = 0
+    local yCenterDebuff = 0
+    if XPB.db.profile.debuff.center and #trackedUnitNames[dstName].debuff > 1 and (XPB.db.profile.debuff.growDirection.icon == "LEFT" or XPB.db.profile.debuff.growDirection.icon == "RIGHT") then
+        xCenterDebuff = ((#trackedUnitNames[dstName].debuff - 1) * sizeDebuff + (#trackedUnitNames[dstName].debuff - 1) * XPB.db.profile.debuff.iconPadding) / 2
+    elseif XPB.db.profile.debuff.center and #trackedUnitNames[dstName].debuff > 1 and (XPB.db.profile.debuff.growDirection.icon == "TOP" or XPB.db.profile.debuff.growDirection.icon == "BOTTOM") then
+        yCenterDebuff = ((#trackedUnitNames[dstName].debuff - 1) * sizeDebuff + (#trackedUnitNames[dstName].debuff - 1) * XPB.db.profile.debuff.iconPadding) / 2
+    end
+
     for i = 1, #trackedUnitNames[dstName].debuff do
         trackedUnitNames[dstName].debuff[i]:SetParent(namePlate)
         trackedUnitNames[dstName].debuff[i]:SetFrameLevel(namePlate.xiconFrameLevel)
@@ -323,10 +331,11 @@ local function addIcons(dstName, namePlate, force)
         trackedUnitNames[dstName].debuff[i].cooldown:SetAlpha(XPB.db.profile.debuff.alpha)
         trackedUnitNames[dstName].debuff[i].cooldown:SetFont(XPB.db.profile.debuff.font, fontSizeDebuff, "OUTLINE")
         if i == 1 then
+
             trackedUnitNames[dstName].debuff[i]:SetPoint(XPB.db.profile.debuff.anchor.self,
                     namePlate, XPB.db.profile.debuff.anchor.nameplate,
-                    XPB.db.profile.debuff.xOffset,
-                    XPB.db.profile.debuff.yOffset)
+                    XPB.db.profile.debuff.xOffset - xCenterDebuff,
+                    XPB.db.profile.debuff.yOffset - yCenterDebuff)
         else
             x,y = 0,0
             if XPB.db.profile.debuff.growDirection.icon == "LEFT" then
@@ -340,9 +349,10 @@ local function addIcons(dstName, namePlate, force)
             end
             trackedUnitNames[dstName].debuff[i]:SetPoint(XPB.db.profile.debuff.growDirection.self,
                     trackedUnitNames[dstName].debuff[i - 1], XPB.db.profile.debuff.growDirection.icon, x, y)
-            end
+        end
         trackedUnitNames[dstName].debuff[i]:Show()
     end
+
 
     for i = 1, #trackedUnitNames[dstName].buff do
         trackedUnitNames[dstName].buff[i]:SetParent(namePlate)
@@ -355,23 +365,34 @@ local function addIcons(dstName, namePlate, force)
         trackedUnitNames[dstName].buff[i].cooldown:SetAlpha(XPB.db.profile.buff.alpha)
         trackedUnitNames[dstName].buff[i].cooldown:SetFont(XPB.db.profile.buff.font, fontSizeBuff, "OUTLINE")
         if i == 1 then
+            local xCenter = 0
+            local yCenter = 0
+            if XPB.db.profile.buff.center and #trackedUnitNames[dstName].buff > 1 and (XPB.db.profile.buff.growDirection.icon == "LEFT" or XPB.db.profile.buff.growDirection.icon == "RIGHT") then
+                xCenter = ((#trackedUnitNames[dstName].buff - 1) * sizeBuff + (#trackedUnitNames[dstName].buff - 1) * XPB.db.profile.buff.iconPadding) / 2
+            elseif XPB.db.profile.buff.center and #trackedUnitNames[dstName].debuff > 1 and (XPB.db.profile.buff.growDirection.icon == "TOP" or XPB.db.profile.buff.growDirection.icon == "BOTTOM") then
+                yCenter = ((#trackedUnitNames[dstName].buff - 1) * sizeBuff + (#trackedUnitNames[dstName].buff - 1) * XPB.db.profile.buff.iconPadding) / 2
+            else
+                xCenterDebuff = 0
+                yCenterDebuff = 0
+            end
             if XPB.db.profile.attachBuffsToDebuffs then
                 if #trackedUnitNames[dstName].debuff > 0 then
                     trackedUnitNames[dstName].buff[i]:SetPoint(XPB.db.profile.buff.anchor.self,
                             trackedUnitNames[dstName].debuff[1], XPB.db.profile.buff.anchor.nameplate,
-                            XPB.db.profile.buff.xOffset,
-                            XPB.db.profile.buff.yOffset)
+                            XPB.db.profile.buff.xOffset + xCenterDebuff - xCenter,
+                            XPB.db.profile.buff.yOffset + yCenterDebuff - yCenter)
+
                 else
                     trackedUnitNames[dstName].buff[i]:SetPoint(XPB.db.profile.debuff.anchor.self,
                             namePlate, XPB.db.profile.debuff.anchor.nameplate,
-                            XPB.db.profile.debuff.xOffset,
-                            XPB.db.profile.debuff.yOffset)
+                            XPB.db.profile.debuff.xOffset - xCenter,
+                            XPB.db.profile.debuff.yOffset - yCenter)
                 end
             else
                 trackedUnitNames[dstName].buff[i]:SetPoint(XPB.db.profile.buff.anchor.self,
                         namePlate, XPB.db.profile.buff.anchor.nameplate,
-                        XPB.db.profile.buff.xOffset,
-                        XPB.db.profile.buff.yOffset)
+                        XPB.db.profile.buff.xOffset- xCenter,
+                        XPB.db.profile.buff.yOffset - yCenter)
             end
         else
             x,y = 0,0

@@ -221,6 +221,7 @@ function XPB:CreateOptions()
                 sorting = "ascending",
                 anchor = { self = "BOTTOMLEFT", nameplate = "TOPLEFT" },
                 growDirection = { self = "LEFT", icon = "RIGHT" },
+                center = true,
             },
             buff = {
                 iconSize = 40,
@@ -237,6 +238,7 @@ function XPB:CreateOptions()
                 sorting = "ascending",
                 anchor = { self = "BOTTOMLEFT", nameplate = "TOPLEFT" },
                 growDirection = { self = "LEFT", icon = "RIGHT" },
+                center = true,
             },
             customBuffs = {},
             customDebuffs = {},
@@ -474,7 +476,7 @@ function XPB:CreateOptions()
                                 order = 25,
                                 type = "select",
                                 name = "Anchor",
-                                values = { ["TOPLEFT"] = "TOPLEFT", ["TOPRIGHT"] = "TOPRIGHT", ["LEFT"] = "LEFT", ["RIGHT"] = "RIGHT", ["BOTTOMLEFT"] = "BOTTOMLEFT", ["BOTTOMRIGHT"] = "BOTTOMRIGHT" },
+                                values = { ["TOP"] = "TOP", ["TOPLEFT"] = "TOPLEFT", ["TOPRIGHT"] = "TOPRIGHT",  ["LEFT"] = "LEFT", ["RIGHT"] = "RIGHT", ["BOTTOM"] = "BOTTOM", ["BOTTOMLEFT"] = "BOTTOMLEFT", ["BOTTOMRIGHT"] = "BOTTOMRIGHT" },
                                 get = function(info)
                                     return self.db.profile.debuff.anchor.nameplate
                                 end,
@@ -484,6 +486,9 @@ function XPB:CreateOptions()
                                         self.db.profile.debuff.anchor.nameplate = state
                                     elseif state == "TOPRIGHT" then
                                         self.db.profile.debuff.anchor.self = "BOTTOMRIGHT"
+                                        self.db.profile.debuff.anchor.nameplate = state
+                                    elseif state == "TOP" then
+                                        self.db.profile.debuff.anchor.self = "BOTTOM"
                                         self.db.profile.debuff.anchor.nameplate = state
                                     elseif state == "LEFT" then
                                         self.db.profile.debuff.anchor.self = "RIGHT"
@@ -496,6 +501,9 @@ function XPB:CreateOptions()
                                         self.db.profile.debuff.anchor.nameplate = state
                                     elseif state == "BOTTOMRIGHT" then
                                         self.db.profile.debuff.anchor.self = "TOPRIGHT"
+                                        self.db.profile.debuff.anchor.nameplate = state
+                                    elseif state == "BOTTOM" then
+                                        self.db.profile.debuff.anchor.self = "TOP"
                                         self.db.profile.debuff.anchor.nameplate = state
                                     end
                                 end
@@ -524,8 +532,13 @@ function XPB:CreateOptions()
                                     end
                                 end
                             },
-                            sorting = {
+                            center = {
+                                type = "toggle",
+                                name = "Center Lock",
                                 order = 27,
+                            },
+                            sorting = {
+                                order = 28,
                                 type = "select",
                                 name = "Sorting",
                                 values = { ["none"] = "None", ["ascending"] = "Ascending", ["descending"] = "Descending"},
@@ -642,7 +655,7 @@ function XPB:CreateOptions()
                                 order = 25,
                                 type = "select",
                                 name = "Anchor",
-                                values = { ["TOPLEFT"] = "TOPLEFT", ["TOPRIGHT"] = "TOPRIGHT", ["LEFT"] = "LEFT", ["RIGHT"] = "RIGHT", ["BOTTOMLEFT"] = "BOTTOMLEFT", ["BOTTOMRIGHT"] = "BOTTOMRIGHT" },
+                                values = { ["TOP"] = "TOP", ["TOPLEFT"] = "TOPLEFT", ["TOPRIGHT"] = "TOPRIGHT",  ["LEFT"] = "LEFT", ["RIGHT"] = "RIGHT", ["BOTTOM"] = "BOTTOM", ["BOTTOMLEFT"] = "BOTTOMLEFT", ["BOTTOMRIGHT"] = "BOTTOMRIGHT" },
                                 get = function(info)
                                     return self.db.profile.buff.anchor.nameplate
                                 end,
@@ -652,6 +665,9 @@ function XPB:CreateOptions()
                                         self.db.profile.buff.anchor.nameplate = state
                                     elseif state == "TOPRIGHT" then
                                         self.db.profile.buff.anchor.self = "BOTTOMRIGHT"
+                                        self.db.profile.buff.anchor.nameplate = state
+                                    elseif state == "TOP" then
+                                        self.db.profile.buff.anchor.self = "BOTTOM"
                                         self.db.profile.buff.anchor.nameplate = state
                                     elseif state == "LEFT" then
                                         self.db.profile.buff.anchor.self = "RIGHT"
@@ -664,6 +680,9 @@ function XPB:CreateOptions()
                                         self.db.profile.buff.anchor.nameplate = state
                                     elseif state == "BOTTOMRIGHT" then
                                         self.db.profile.buff.anchor.self = "TOPRIGHT"
+                                        self.db.profile.buff.anchor.nameplate = state
+                                    elseif state == "BOTTOM" then
+                                        self.db.profile.buff.anchor.self = "TOP"
                                         self.db.profile.buff.anchor.nameplate = state
                                     end
                                 end
@@ -693,8 +712,13 @@ function XPB:CreateOptions()
                                     end
                                 end
                             },
-                            sorting = {
+                            center = {
+                                type = "toggle",
+                                name = "Center Lock",
                                 order = 27,
+                            },
+                            sorting = {
+                                order = 28,
                                 type = "select",
                                 name = "Sorting",
                                 values = { ["none"] = "None", ["ascending"] = "Ascending", ["descending"] = "Descending"},
@@ -851,6 +875,20 @@ function XPB:CreateOptions()
         },
     }
 
+    local options = {
+        name = "XiconPlateBuffs",
+        type = "group",
+        args = {
+            load = {
+                name = "Load configuration",
+                desc = "Load configuration options",
+                type = "execute",
+                func = function() LibStub("AceConfigDialog-3.0"):Open("XiconPlateBuffs") end,
+            },
+        },
+    }
+
+    LibStub("AceConfig-3.0"):RegisterOptionsTable("XiconPlateBuffs_blizz", options)
+    LibStub("AceConfigDialog-3.0"):AddToBlizOptions("XiconPlateBuffs_blizz", "XiconPlateBuffs")
     LibStub("AceConfig-3.0"):RegisterOptionsTable("XiconPlateBuffs", self.options)
-    LibStub("AceConfigDialog-3.0"):AddToBlizOptions("XiconPlateBuffs", "XiconPlateBuffs")
 end

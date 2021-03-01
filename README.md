@@ -1,6 +1,6 @@
 # XiconPlateBuffs TBC Addon
 
-### [v1.0-Release Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.0-Release/XiconPlateBuffs_v1.0-Release.zip)
+### [v1.0.1-Release Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.0.1-Release/XiconPlateBuffs_v1.0.1-Release.zip)
 
 #### Recommended addons to use with XiconPlateBuffs
 
@@ -16,7 +16,13 @@ This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
 
 ![Screenshot](../readme-media/sample.png)
 
-### Changes
+### Changes#
+
+v1.0.1-Release
+- add button to blizz options to open own config gui
+- add center lock optiojn for buffs/debuffs
+- add TOP and BOTTOM anchors (optimal for center lock)
+- fix overwrite GetName()
 
 v1.0-Release
 - /xpb or /xpbconfig opens own config window
