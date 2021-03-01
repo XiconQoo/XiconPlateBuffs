@@ -151,9 +151,10 @@ XiconPlateBuffs:SetScript("OnUpdate", function(self, elapsed)
                         local dstGUID = "0x00001312031"
                         XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 29166, 15) -- innervate
                         XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 642, 12) -- divine shield
-                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 22570, 5) -- maim
-                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 14309, 8) -- freezing trap
-                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 12826, 5) -- polymorph
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 22570, 3) -- maim
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 25274, 6) -- Intercept Stun
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 14309, 9) -- freezing trap
+                        XiconDebuffModule:addDebuff(string.gsub(name, "%s+", ""), dstGUID, 12826, 12) -- polymorph
                     end
                     -- check if namePlate is target or mouseover
                     local border, castborder, casticon, highlight, nameText, levelText, levelIcon, raidIcon = namePlate:GetRegions()
