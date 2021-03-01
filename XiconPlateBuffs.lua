@@ -63,7 +63,7 @@ function table.removekey(table, key)
     return element
 end
 
-function XiconPlateBuffs:GetName(namePlate)
+function XiconPlateBuffs:GetNamePlateName(namePlate)
     local name
     if self.Aloft then
         if namePlate.aloftData then
@@ -145,7 +145,7 @@ XiconPlateBuffs:SetScript("OnUpdate", function(self, elapsed)
         -- do stuff
         for namePlate,_ in pairs(self.knownNameplates) do
             if namePlate:IsVisible() then
-                local name = XiconPlateBuffs:GetName(namePlate)
+                local name = self:GetNamePlateName(namePlate)
                 if name then
                     if self.testMode then
                         local dstGUID = "0x00001312031"
