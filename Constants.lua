@@ -10,6 +10,7 @@ XiconPlateBuffs.trackedCrowdControl = {
         [GetSpellInfo(72)] = {duration = 6, id = 72, track = "debuff", texture = select(3, GetSpellInfo(72))}, -- Shield Bash (Warrior)
         [GetSpellInfo(8042)] = {duration = 2, id = 8042, track = "debuff", texture = select(3, GetSpellInfo(8042))}, -- Earth Shock (Shaman)
         [GetSpellInfo(19244)] = {duration = 5, id = 1, track = "debuff", texture = select(3, GetSpellInfo(19244))}, -- Spell Lock (Warlock
+        [GetSpellInfo(32747)] = {duration = 3, id = 32747, track = "debuff", texture = select(3, GetSpellInfo(32747))}, -- Deadly Throw Interrupt
     },
     ["shortinterrupts"] = {
         --Shaman
