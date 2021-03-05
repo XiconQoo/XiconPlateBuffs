@@ -183,7 +183,7 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, inte
         trackedUnitNames[destName..destGUID] = { debuff = {}, buff ={}}
     end
     local spellName, _, texture = GetSpellInfo(spellID)
-    if trackedCC[spellName].texture then
+    if trackedCC[spellName] and trackedCC[spellName].texture then
         texture = trackedCC[spellName].texture
     end
     local duration = trackedCC[spellName] ~= nil and trackedCC[spellName].duration or 10
