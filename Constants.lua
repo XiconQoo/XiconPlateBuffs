@@ -146,7 +146,22 @@ XiconPlateBuffs.trackedCrowdControl = {
         spellSchool = "physical",
         id = 19577,
     },
-
+    --Scare Beast 14327
+    [GetSpellInfo(14327)] = {
+        track = "debuff",
+        duration = 10,
+        priority = 40,
+        spellSchool = "magic",
+        id = 14327,
+    },
+    -- Improved Wing Clip 19229
+    [GetSpellInfo(19229)] = {
+        track = "debuff",
+        duration = 5,
+        priority = 20,
+        spellSchool = "physical",
+        id = 19229,
+    },
     -- The Beast Within
     [GetSpellInfo(34692)] = {
         track = "buff",
@@ -277,6 +292,14 @@ XiconPlateBuffs.trackedCrowdControl = {
         fear = true,
         spellSchool = "magic",
         id = 8122,
+    },
+    --Blackout Stun 15269
+    [GetSpellInfo(15269)] = {
+        track = "debuff",
+        duration = 3,
+        priority = 40,
+        spellSchool = "physical",
+        id = 15269,
     },
     -- Chastise
     [GetSpellInfo(44047)] = {
@@ -475,9 +498,26 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 3,
         priority = 40,
         spellSchool = "physical",
+        texture = select(3, GetSpellInfo(20252)),
         id = 25274,
     },
-
+    --Charge Stun
+    [GetSpellInfo(7922)] = {
+        track = "debuff",
+        duration = 1,
+        priority = 40,
+        spellSchool = "physical",
+        texture = select(3, GetSpellInfo(100)),
+        id = 7922,
+    },
+    --Improved Hamstring 23694
+    [GetSpellInfo(23694)] = {
+        track = "debuff",
+        duration = 5,
+        priority = 40,
+        spellSchool = "physical",
+        id = 23694,
+    },
     -- Spell Reflection
     [GetSpellInfo(23920)] = {
         track = "buff",
@@ -502,9 +542,17 @@ XiconPlateBuffs.trackedCrowdControl = {
         duration = 3,
         priority = 40,
         spellSchool = "physical",
+        texture = select(3, GetSpellInfo(12284)),
         id = 5530,
     },
-
+    -- Storm Herald Stun effect
+    [GetSpellInfo(34510)] = {
+        track = "debuff",
+        duration = 4,
+        priority = 40,
+        spellSchool = "physical",
+        id = 34510,
+    },
     -- War Stomp
     [GetSpellInfo(20549)] = {
         track = "debuff",

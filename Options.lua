@@ -129,6 +129,9 @@ local function getSpells()
     end)
     for i=1, #debuffs do
         local spellName, _, texture = GetSpellInfo(debuffs[i].id)
+        if debuffs[i].texture then
+            texture = debuffs[i].texture
+        end
         spells.debuffs.args["debuff"..debuffs[i].id] = {
             order = i,
             name = spellName,
@@ -141,6 +144,9 @@ local function getSpells()
     end
     for i=1, #buffs do
         local spellName, _, texture = GetSpellInfo(buffs[i].id)
+        if buffs[i].texture then
+            texture = buffs[i].texture
+        end
         spells.buffs.args["buff"..buffs[i].id] = {
             order = i,
             name = spellName,
