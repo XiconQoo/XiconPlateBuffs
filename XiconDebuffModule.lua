@@ -352,7 +352,6 @@ local function addIcons(dstName, namePlate, force)
         trackedUnitNames[dstName].debuff[i].cooldown:SetFont(XPB.db.profile.debuff.font, fontSizeDebuff, "OUTLINE")
         trackedUnitNames[dstName].debuff[i].stacks:SetFont(XPB.db.profile.debuff.font, fontSizeStacksDebuff, "OUTLINE")
         if i == 1 then
-
             trackedUnitNames[dstName].debuff[i]:SetPoint(XPB.db.profile.debuff.anchor.self,
                     namePlate, XPB.db.profile.debuff.anchor.nameplate,
                     XPB.db.profile.debuff.xOffset - xCenterDebuff,
@@ -385,13 +384,13 @@ local function addIcons(dstName, namePlate, force)
         trackedUnitNames[dstName].buff[i]:SetAlpha(XPB.db.profile.buff.alpha)
         trackedUnitNames[dstName].buff[i].cooldown:SetAlpha(XPB.db.profile.buff.alpha)
         trackedUnitNames[dstName].buff[i].cooldown:SetFont(XPB.db.profile.buff.font, fontSizeBuff, "OUTLINE")
-        trackedUnitNames[dstName].debuff[i].stacks:SetFont(XPB.db.profile.buff.font, fontSizeStacksBuff, "OUTLINE")
+        trackedUnitNames[dstName].buff[i].stacks:SetFont(XPB.db.profile.buff.font, fontSizeStacksBuff, "OUTLINE")
         if i == 1 then
             local xCenter = 0
             local yCenter = 0
             if XPB.db.profile.buff.center and #trackedUnitNames[dstName].buff > 1 and (XPB.db.profile.buff.growDirection.icon == "LEFT" or XPB.db.profile.buff.growDirection.icon == "RIGHT") then
                 xCenter = ((#trackedUnitNames[dstName].buff - 1) * sizeBuff + (#trackedUnitNames[dstName].buff - 1) * XPB.db.profile.buff.iconPadding) / 2
-            elseif XPB.db.profile.buff.center and #trackedUnitNames[dstName].debuff > 1 and (XPB.db.profile.buff.growDirection.icon == "TOP" or XPB.db.profile.buff.growDirection.icon == "BOTTOM") then
+            elseif XPB.db.profile.buff.center and #trackedUnitNames[dstName].buff > 1 and (XPB.db.profile.buff.growDirection.icon == "TOP" or XPB.db.profile.buff.growDirection.icon == "BOTTOM") then
                 yCenter = ((#trackedUnitNames[dstName].buff - 1) * sizeBuff + (#trackedUnitNames[dstName].buff - 1) * XPB.db.profile.buff.iconPadding) / 2
             else
                 xCenterDebuff = 0
