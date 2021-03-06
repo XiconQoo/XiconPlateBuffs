@@ -137,7 +137,7 @@ local function removeDebuff(destName, destGUID, spellID)
     end
 end
 
-function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeLeft)
+function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeLeft, stacks)
     destName = string.gsub(destName, "%s+", "")
     local found
     if trackedUnitNames[destName..destGUID] then
@@ -145,9 +145,14 @@ function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeL
             if trackedUnitNames[destName..destGUID].buff[i] and trackedUnitNames[destName..destGUID].buff[i].spellID == spellID then
                 --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(GetTime(), timeLeft or trackedCC[spellName].duration)
                 if timeLeft then
-                    trackedUnitNames[destName..destGUID].buff[i].endtime = calcEndTime(timeLeft)
+                    if type(timeLeft) == "number" then
+                        trackedUnitNames[destName..destGUID].buff[i].endtime = calcEndTime(timeLeft)
+                    end
                 else
                     trackedUnitNames[destName..destGUID].buff[i].endtime = GetTime() + trackedCC[trackedUnitNames[destName..destGUID].buff[i].spellName].duration
+                end
+                if stacks then
+                    trackedUnitNames[destName..destGUID].buff[i].stacks:SetText(stacks)
                 end
                 --sorting
                 sortIcons(destName, destGUID, "buff")
@@ -160,9 +165,14 @@ function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeL
                 if trackedUnitNames[destName..destGUID].debuff[i] and trackedUnitNames[destName..destGUID].debuff[i].spellID == spellID then
                     --trackedUnitNames[destName..destGUID][i].cooldowncircle:SetCooldown(GetTime(), timeLeft or trackedCC[spellName].duration)
                     if timeLeft then
-                        trackedUnitNames[destName..destGUID].debuff[i].endtime = calcEndTime(timeLeft)
+                        if type(timeLeft) == "number" then
+                            trackedUnitNames[destName..destGUID].debuff[i].endtime = calcEndTime(timeLeft)
+                        end
                     else
                         trackedUnitNames[destName..destGUID].debuff[i].endtime = GetTime() + trackedCC[trackedUnitNames[destName..destGUID].debuff[i].spellName].duration
+                    end
+                    if stacks then
+                        trackedUnitNames[destName..destGUID].debuff[i].stacks:SetText(stacks)
                     end
                     --sorting
                     sortIcons(destName, destGUID, "debuff")
@@ -174,15 +184,18 @@ function XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeL
     end
     if not found then
         --print("not found .. spellID = " .. spellID)
-        XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft)
+        XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, nil, nil, nil, stacks)
     end
 end
 
-function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, interrupt, spellSchool, tex)
+function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, interrupt, spellSchool, tex, stacks)
     if trackedUnitNames[destName..destGUID] == nil then
         trackedUnitNames[destName..destGUID] = { debuff = {}, buff ={}}
     end
     local spellName, _, texture = GetSpellInfo(spellID)
+    if trackedCC[spellName] and trackedCC[spellName].texture then
+        texture = trackedCC[spellName].texture
+    end
     local duration = trackedCC[spellName] ~= nil and trackedCC[spellName].duration or 10
     local track = trackedCC[GetSpellInfo(spellID)] and trackedCC[GetSpellInfo(spellID)].track or "debuff"
     if interrupt then
@@ -194,6 +207,9 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, inte
         icon = tremove(framePool, 1)
     else
         icon = CreateFrame("frame", nil, nil)
+        icon.stacks = icon:CreateFontString(nil, "OVERLAY")
+        icon.stacks:SetFont(XPB.db.profile[track].font, XPB.db.profile[track].fontSizeStacks, "OUTLINE")
+        icon.stacks:SetPoint("BOTTOMRIGHT", icon, "BOTTOMRIGHT", 0, 1)
         icon.texture = icon:CreateTexture(nil, "BACKGROUND")
         icon.texture:SetAllPoints(icon)
         icon.border = icon:CreateTexture(nil, "BORDER")
@@ -206,6 +222,7 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, inte
     icon:SetParent(UIParent)
     icon:SetAlpha(0)
     icon.texture:SetTexture(texture)
+    icon.stacks:SetText(stacks)
     local color
     if interrupt then
         color = spellSchool
@@ -285,26 +302,29 @@ function XiconDebuffModule:addDebuff(destName, destGUID, spellID, timeLeft, inte
     sortIcons(destName, destGUID, icon.trackType)
 end
 
-local function calcResponsive(responsive, responsiveMax, iconSize, fontSize, numBuffs)
-    local sizeBuff, fontSizeBuff
+local function calcResponsive(responsive, responsiveMax, iconSize, fontSize, fontSizeStacks, numBuffs)
+    local sizeBuff, fontSizeBuff, fontSizeStacksBuff
     if responsive and numBuffs > 0 and numBuffs * iconSize + (numBuffs * 2 - 2) > responsiveMax then
         sizeBuff = (responsiveMax - (numBuffs * 2 - 2)) / numBuffs
         if fontSize < sizeBuff/2 then
             fontSizeBuff = fontSize
+            fontSizeStacksBuff = fontSizeStacks
         else
             fontSizeBuff = sizeBuff / 2
+            fontSizeStacksBuff = fontSizeStacks / 2
         end
     else
         fontSizeBuff = fontSize
         sizeBuff = iconSize
+        fontSizeStacksBuff = fontSizeStacks
     end
-    return sizeBuff, fontSizeBuff
+    return sizeBuff, fontSizeBuff, fontSizeStacksBuff
 end
 
 local function addIcons(dstName, namePlate, force)
     local numBuffs, numDebuffs = #trackedUnitNames[dstName].buff, #trackedUnitNames[dstName].debuff
-    local sizeBuff, fontSizeBuff = calcResponsive(XPB.db.profile.buff["responsive"], XPB.db.profile.buff["responsiveMax"], XPB.db.profile.buff["iconSize"], XPB.db.profile.buff.fontSize, numBuffs)
-    local sizeDebuff, fontSizeDebuff = calcResponsive(XPB.db.profile.debuff["responsive"], XPB.db.profile.debuff["responsiveMax"], XPB.db.profile.debuff["iconSize"], XPB.db.profile.debuff["fontSize"], numDebuffs)
+    local sizeBuff, fontSizeBuff, fontSizeStacksBuff = calcResponsive(XPB.db.profile.buff["responsive"], XPB.db.profile.buff["responsiveMax"], XPB.db.profile.buff["iconSize"], XPB.db.profile.buff["fontSize"], XPB.db.profile.buff.fontSizeStacks, numBuffs)
+    local sizeDebuff, fontSizeDebuff, fontSizeStacksDebuff = calcResponsive(XPB.db.profile.debuff["responsive"], XPB.db.profile.debuff["responsiveMax"], XPB.db.profile.debuff["iconSize"], XPB.db.profile.debuff["fontSize"], XPB.db.profile.debuff.fontSizeStacks, numDebuffs)
     local x, y = 0,0
 
     --reassignment release old nameplate
@@ -330,8 +350,8 @@ local function addIcons(dstName, namePlate, force)
         trackedUnitNames[dstName].debuff[i]:SetAlpha(XPB.db.profile.debuff.alpha)
         trackedUnitNames[dstName].debuff[i].cooldown:SetAlpha(XPB.db.profile.debuff.alpha)
         trackedUnitNames[dstName].debuff[i].cooldown:SetFont(XPB.db.profile.debuff.font, fontSizeDebuff, "OUTLINE")
+        trackedUnitNames[dstName].debuff[i].stacks:SetFont(XPB.db.profile.debuff.font, fontSizeStacksDebuff, "OUTLINE")
         if i == 1 then
-
             trackedUnitNames[dstName].debuff[i]:SetPoint(XPB.db.profile.debuff.anchor.self,
                     namePlate, XPB.db.profile.debuff.anchor.nameplate,
                     XPB.db.profile.debuff.xOffset - xCenterDebuff,
@@ -364,12 +384,13 @@ local function addIcons(dstName, namePlate, force)
         trackedUnitNames[dstName].buff[i]:SetAlpha(XPB.db.profile.buff.alpha)
         trackedUnitNames[dstName].buff[i].cooldown:SetAlpha(XPB.db.profile.buff.alpha)
         trackedUnitNames[dstName].buff[i].cooldown:SetFont(XPB.db.profile.buff.font, fontSizeBuff, "OUTLINE")
+        trackedUnitNames[dstName].buff[i].stacks:SetFont(XPB.db.profile.buff.font, fontSizeStacksBuff, "OUTLINE")
         if i == 1 then
             local xCenter = 0
             local yCenter = 0
             if XPB.db.profile.buff.center and #trackedUnitNames[dstName].buff > 1 and (XPB.db.profile.buff.growDirection.icon == "LEFT" or XPB.db.profile.buff.growDirection.icon == "RIGHT") then
                 xCenter = ((#trackedUnitNames[dstName].buff - 1) * sizeBuff + (#trackedUnitNames[dstName].buff - 1) * XPB.db.profile.buff.iconPadding) / 2
-            elseif XPB.db.profile.buff.center and #trackedUnitNames[dstName].debuff > 1 and (XPB.db.profile.buff.growDirection.icon == "TOP" or XPB.db.profile.buff.growDirection.icon == "BOTTOM") then
+            elseif XPB.db.profile.buff.center and #trackedUnitNames[dstName].buff > 1 and (XPB.db.profile.buff.growDirection.icon == "TOP" or XPB.db.profile.buff.growDirection.icon == "BOTTOM") then
                 yCenter = ((#trackedUnitNames[dstName].buff - 1) * sizeBuff + (#trackedUnitNames[dstName].buff - 1) * XPB.db.profile.buff.iconPadding) / 2
             else
                 xCenterDebuff = 0
@@ -476,28 +497,28 @@ local function updateDebuffsOnUnit(unit, event)
         --end
         local debuffs = {}
         for i = 1, 40 do
-            local spellName,rank,icon,count,dtype,duration,timeLeft,isMine = UnitDebuff(unit, i)
+            local spellName,rank,icon,stacks,dtype,duration,timeLeft,isMine = UnitDebuff(unit, i)
             if not spellName then break end
             if trackedCC[spellName] and timeLeft then
                 debuffs[spellName] = true
                 --update buff durations
-                XiconDebuffModule:addOrRefreshDebuff(unitName, unitGUID, trackedCC[spellName].id, timeLeft or trackedCC[spellName].duration, true)
+                XiconDebuffModule:addOrRefreshDebuff(unitName, unitGUID, trackedCC[spellName].id, timeLeft or trackedCC[spellName].duration, stacks > 1 and stacks or nil)
                 if timeLeft > 0.5 then
-                    XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, unitName, unitGUID, duration, timeLeft, "enemy"))
+                    XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, unitName, unitGUID, duration, timeLeft, "enemy", stacks > 1 and tostring(stacks) or "nil"))
                 end
             end
         end
         local buffs = {}
         for i = 1, 40 do
-            local spellName, _, _, _, duration, timeLeft,isMine,isStealable,shouldConsolidate,spellId = UnitBuff(unit, i)
+            local spellName, _, _, stacks, duration, timeLeft,isMine,isStealable,shouldConsolidate,spellId = UnitBuff(unit, i)
             if not spellName then break end
             if trackedCC[spellName] and timeLeft then
                 buffs[spellName] = true
                 --update buff durations
                 if timeLeft then
-                    XiconDebuffModule:addOrRefreshDebuff(unitName, unitGUID, trackedCC[spellName].id, timeLeft, true)
+                    XiconDebuffModule:addOrRefreshDebuff(unitName, unitGUID, trackedCC[spellName].id, timeLeft, stacks > 1 and stacks or nil)
                     if timeLeft > 0.5 then
-                        XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, unitName, unitGUID, duration, timeLeft, "enemy"))
+                        XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, unitName, unitGUID, duration, timeLeft, "enemy", stacks > 1 and tostring(stacks) or "nil"))
                     end
                 end
             end
@@ -646,6 +667,12 @@ function events:COMBAT_LOG_EVENT_UNFILTERED(...)
                 multiplier = 0.7
             end
             --print(spellName .. " - " .. extraSpellId .. " - " .. extraSpellName .. " - " .. extraSchool)
+            --[[XiconDebuffModule:SendMessage(string.format("INTERRUPT:%s,%s,%s,%s,%s,%s,%s,%s",
+                    trackedCC.interrupts[spellName].realId or trackedCC.interrupts[spellName].id, spellName, name, dstGUID,
+                    extraSchool,
+                    trackedCC.interrupts[spellName].duration * multiplier,
+                    "enemy",
+                    "nil"))--]]
             XiconDebuffModule:addDebuff(name, dstGUID,
                     trackedCC.interrupts[spellName].id,
                     trackedCC.interrupts[spellName].duration * multiplier,
@@ -658,11 +685,20 @@ function events:COMBAT_LOG_EVENT_UNFILTERED(...)
     --print(eventType .. " - " .. (dstName and dstName.." dst" or srcName and srcName.." src"))
     if dstIsEnemy and (trackedCC[spellName]) then
         --print(eventType .. " - " ..spellName)
+        name = string.gsub(dstName, "%s+", "")
         if eventType == "SPELL_AURA_APPLIED" or eventType == "SPELL_AURA_REFRESH" then
-            name = string.gsub(dstName, "%s+", "")
+            --print("SPELL_AURA_APPLIED/SPELL_AURA_REFRESH " .. spellName)
             XiconDebuffModule:addOrRefreshDebuff(name, dstGUID, trackedCC[spellName].id)
-            XiconDebuffModule:SendMessage(string.format(eventType .. ":%s,%s,%s,%s,%s,%s,%s", spellID, spellName, name, dstGUID, "nil", "nil", "enemy"))
+            XiconDebuffModule:SendMessage(string.format(eventType .. ":%s,%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, name, dstGUID, "nil", "nil", "enemy", "nil"))
             updateDebuffsOnUnitGUID(dstGUID)
+        end
+        if eventType == "SPELL_AURA_APPLIED_DOSE" then
+            XiconDebuffModule:addOrRefreshDebuff(name, dstGUID, trackedCC[spellName].id, nil, extraSpellName)
+            XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s,%d", trackedCC[spellName].id, spellName, name, dstGUID, "nil", "nil", "enemy", extraSpellName))
+        end
+        if eventType == "SPELL_AURA_REMOVED_DOSE" then
+            XiconDebuffModule:addOrRefreshDebuff(name, dstGUID, trackedCC[spellName].id, "ignore", extraSpellName > 1 and extraSpellName or "")
+            XiconDebuffModule:SendMessage(string.format("SPELL_AURA_REFRESH:%s,%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, name, dstGUID, "nil", "ignore", "enemy", extraSpellName > 1 and tostring(extraSpellName) or "nil"))
         end
     end
     if (srcIsEnemy or dstIsEnemy) and trackedCC[spellName] then
@@ -670,7 +706,7 @@ function events:COMBAT_LOG_EVENT_UNFILTERED(...)
             --print(eventType .. " - " .. spellName .. " - " .. dstName .. (dstIsEnemy and " - dst" or srcIsEnemy and " - src"))
             name = string.gsub(dstName, "%s+", "")
             removeDebuff(name, dstGUID, trackedCC[spellName].id)
-            XiconDebuffModule:SendMessage(string.format(eventType .. ":%s,%s,%s,%s,%s,%s,%s", spellID, spellName, name, dstGUID, "nil", "nil", "enemy"))
+            XiconDebuffModule:SendMessage(string.format(eventType .. ":%s,%s,%s,%s,%s,%s,%s,%s", trackedCC[spellName].id, spellName, name, dstGUID, "nil", "nil", "enemy", "nil"))
         end
     end
     if dstIsEnemy and (eventType == "UNIT_DIED" or eventType == "UNIT_DESTROYED" or eventType == "PARTY_KILL") then
@@ -678,7 +714,7 @@ function events:COMBAT_LOG_EVENT_UNFILTERED(...)
         if trackedUnitNames[name..dstGUID] then
             XiconDebuffModule.hideIcons(nil, name..dstGUID)
             trackedUnitNames[name..dstGUID] = nil
-            XiconDebuffModule:SendMessage(string.format(eventType .. ":%s,%s,%s,%s,%s,%s,%s", "nil", "nil", name, dstGUID, "nil", "nil", "enemy"))
+            XiconDebuffModule:SendMessage(string.format(eventType .. ":%s,%s,%s,%s,%s,%s,%s,%s", "nil", "nil", name, dstGUID, "nil", "nil", "enemy", "nil"))
         end
     end
 end
@@ -703,21 +739,37 @@ end
 function events:CHAT_MSG_ADDON(prefix, msg, type, author)
     if( (prefix == "PCCT2" or prefix == "XICON1") and author ~= UnitName("player") ) then
         local eventType, data = string.match(msg, "(.+)%:(.+)")
-        local spellID, spellName, destName, destGUID, duration, timeLeft, playerType = string.split(",", data)
-        duration = tonumber(duration)
-        timeLeft = tonumber(timeLeft)
-        spellID = tonumber(spellID)
-        if( eventType == "SPELL_AURA_APPLIED" ) then
-            XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeLeft)
-        elseif( eventType == "SPELL_AURA_REFRESH" ) then
-            XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeLeft)
-        elseif( eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL" ) then
-            removeDebuff(destName, destGUID, spellID)
-        elseif eventType == "UNIT_DIED" then
-            if trackedUnitNames[destName..destGUID] then
-                XiconDebuffModule.hideIcons(nil, destName..destGUID)
-                trackedUnitNames[destName..destGUID] = nil
+        local spellID, spellName, destName, destGUID, duration, timeLeft, playerType, stacks = string.split(",", data)
+        if trackedCC[GetSpellInfo(spellID)] then
+            duration = tonumber(duration)
+            timeLeft = tonumber(timeLeft)
+            spellID = tonumber(spellID)
+            stacks = tonumber(stacks)
+            if( eventType == "SPELL_AURA_APPLIED" ) then
+                XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeLeft)
+            elseif( eventType == "SPELL_AURA_REFRESH" ) then
+                XiconDebuffModule:addOrRefreshDebuff(destName, destGUID, spellID, timeLeft, stacks)
+            elseif( eventType == "SPELL_AURA_REMOVED" or eventType == "SPELL_AURA_DISPEL" ) then
+                removeDebuff(destName, destGUID, spellID)
+            elseif eventType == "UNIT_DIED" then
+                if trackedUnitNames[destName..destGUID] then
+                    XiconDebuffModule.hideIcons(nil, destName..destGUID)
+                    trackedUnitNames[destName..destGUID] = nil
+                end
             end
+        --[[elseif trackedCC.interrupts[GetSpellInfo(spellID)] then
+            if( eventType == "INTERRUPT" ) then
+                --duration = tonumber(duration)
+                timeLeft = tonumber(timeLeft)
+                spellID = tonumber(spellID)
+                stacks = tonumber(stacks)
+                XiconDebuffModule:addDebuff(destName, destGUID,
+                        trackedCC.interrupts[GetSpellInfo(spellID)].id,
+                        timeLeft,
+                        true,
+                        getSpellSchool(duration),
+                        trackedCC.interrupts[GetSpellInfo(spellID)].texture)
+            end--]]
         end
     end
 end

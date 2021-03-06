@@ -1,6 +1,6 @@
 # XiconPlateBuffs TBC Addon
 
-### [v1.0.1-Release Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.0.1-Release/XiconPlateBuffs_v1.0.1-Release.zip)
+### [v1.0.2-Release Download Here](https://github.com/XiconQoo/XiconPlateBuffs/releases/download/v1.0.2-Release/XiconPlateBuffs_v1.0.2-Release.zip)
 
 #### Recommended addons to use with XiconPlateBuffs
 
@@ -17,6 +17,12 @@ This is inferior to PlateBuffer in PvE. PvE is not the main aim for this addon.
 ![Screenshot](../readme-media/sample.png)
 
 ### Changes#
+
+v1.0.2-Release
+- add deadly throw interrupt
+- add Blackout, Improved Wingclip, Improved Hamstring, Scare Beast, Stormherald Stun
+- changed textures for charge, intercept and macestun
+- add stacks numbers to buffs/debuffs
 
 v1.0.1-Release
 - add button to blizz options to open own config gui

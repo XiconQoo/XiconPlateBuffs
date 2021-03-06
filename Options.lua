@@ -129,6 +129,9 @@ local function getSpells()
     end)
     for i=1, #debuffs do
         local spellName, _, texture = GetSpellInfo(debuffs[i].id)
+        if debuffs[i].texture then
+            texture = debuffs[i].texture
+        end
         spells.debuffs.args["debuff"..debuffs[i].id] = {
             order = i,
             name = spellName,
@@ -141,6 +144,9 @@ local function getSpells()
     end
     for i=1, #buffs do
         local spellName, _, texture = GetSpellInfo(buffs[i].id)
+        if buffs[i].texture then
+            texture = buffs[i].texture
+        end
         spells.buffs.args["buff"..buffs[i].id] = {
             order = i,
             name = spellName,
@@ -212,6 +218,7 @@ function XPB:CreateOptions()
                 iconBorder = "Interface\\AddOns\\XiconPlateBuffs\\media\\Border_rounded_blp",
                 iconBorderColor = {r = 1, g = 0, b = 0, a = 1},
                 fontSize = 15,
+                fontSizeStacks = 9,
                 responsive = true,
                 responsiveMax = 120,
                 font = "Fonts\\FRIZQT__.ttf",
@@ -229,6 +236,7 @@ function XPB:CreateOptions()
                 iconBorder = "Interface\\AddOns\\XiconPlateBuffs\\media\\Border_rounded_blp",
                 iconBorderColor = {r = 0, g = 0, b = 0, a = 1},
                 fontSize = 15,
+                fontSizeStacks = 9,
                 responsive = true,
                 responsiveMax = 120,
                 font = "Fonts\\FRIZQT__.ttf",
@@ -420,12 +428,20 @@ function XPB:CreateOptions()
                                 max = 100,
                                 step = 1,
                                 type = "range",
-                                name = "Font Size",
+                                name = "CD Font Size",
+                            },
+                            fontSizeStacks = {
+                                order = 12,
+                                min = 1,
+                                max = 100,
+                                step = 1,
+                                type = "range",
+                                name = "Stack Font Size",
                             },
                             font = {
-                                order = 12,
+                                order = 13,
                                 type = "select",
-                                name = "Cooldown Font",
+                                name = "Font",
                                 values = { ["Fonts\\ARIALN.ttf"] = "Arial",
                                            ["Fonts\\FRIZQT__.ttf"] = "Fritz Quadrata",
                                            ["Fonts\\MORPHEUS.ttf"] = "Morpheus",
@@ -598,12 +614,20 @@ function XPB:CreateOptions()
                                 max = 100,
                                 step = 1,
                                 type = "range",
-                                name = "Font Size",
+                                name = "CD Font Size",
+                            },
+                            fontSizeStacks = {
+                                order = 12,
+                                min = 1,
+                                max = 100,
+                                step = 1,
+                                type = "range",
+                                name = "Stack Font Size",
                             },
                             font = {
-                                order = 12,
+                                order = 13,
                                 type = "select",
-                                name = "Cooldown Font",
+                                name = "Font",
                                 values = { ["Fonts\\ARIALN.ttf"] = "Arial",
                                            ["Fonts\\FRIZQT__.ttf"] = "Fritz Quadrata",
                                            ["Fonts\\MORPHEUS.ttf"] = "Morpheus",
