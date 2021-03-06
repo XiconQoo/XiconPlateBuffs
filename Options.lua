@@ -432,7 +432,7 @@ function XPB:CreateOptions()
                             },
                             fontSizeStacks = {
                                 order = 12,
-                                min = 0,
+                                min = 1,
                                 max = 100,
                                 step = 1,
                                 type = "range",
@@ -618,7 +618,7 @@ function XPB:CreateOptions()
                             },
                             fontSizeStacks = {
                                 order = 12,
-                                min = 0,
+                                min = 1,
                                 max = 100,
                                 step = 1,
                                 type = "range",
